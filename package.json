@@ -1,0 +1,89 @@
+{
+  "_args": [
+    [
+      "react-native-web@0.9.13",
+      "/Users/ryanwang/Work/codes/WebZRC/client/src/application/ReactNative/WebZRC"
+    ]
+  ],
+  "_from": "react-native-web@0.9.13",
+  "_id": "react-native-web@0.9.13",
+  "_inBundle": false,
+  "_integrity": "sha512-P1nCvBVFrv3J5BXu39iS4A3fR7m0vtGaCAy4MigAtZpakIuara/98h516fDQajPqoVy2T4cQgYZUQAr+FBnppQ==",
+  "_location": "/react-native-web",
+  "_phantomChildren": {
+    "fbjs-css-vars": "1.0.2",
+    "isomorphic-fetch": "2.2.1",
+    "loose-envify": "1.4.0",
+    "object-assign": "4.1.1",
+    "promise": "7.3.1",
+    "setimmediate": "1.0.5",
+    "ua-parser-js": "0.7.21"
+  },
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "react-native-web@0.9.13",
+    "name": "react-native-web",
+    "escapedName": "react-native-web",
+    "rawSpec": "0.9.13",
+    "saveSpec": null,
+    "fetchSpec": "0.9.13"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/react-native-web/-/react-native-web-0.9.13.tgz",
+  "_spec": "0.9.13",
+  "_where": "/Users/ryanwang/Work/codes/WebZRC/client/src/application/ReactNative/WebZRC",
+  "author": {
+    "name": "Nicolas Gallagher"
+  },
+  "bugs": {
+    "url": "https://github.com/necolas/react-native-web/issues"
+  },
+  "dependencies": {
+    "array-find-index": "^1.0.2",
+    "create-react-class": "^15.6.2",
+    "debounce": "^1.2.0",
+    "deep-assign": "^3.0.0",
+    "fbjs": "^1.0.0",
+    "hyphenate-style-name": "^1.0.2",
+    "inline-style-prefixer": "^5.0.3",
+    "normalize-css-color": "^1.0.2",
+    "prop-types": "^15.6.0",
+    "react-timer-mixin": "^0.13.4"
+  },
+  "description": "React Native for Web",
+  "files": [
+    "dist",
+    "jest",
+    "jest-preset.json",
+    "src",
+    "!**/__tests__"
+  ],
+  "homepage": "https://github.com/necolas/react-native-web#readme",
+  "keywords": [
+    "react",
+    "react-component",
+    "react-native",
+    "web"
+  ],
+  "license": "MIT",
+  "main": "dist/cjs/index.js",
+  "module": "dist/index.js",
+  "name": "react-native-web",
+  "peerDependencies": {
+    "react": ">=16.5.1",
+    "react-art": ">=16.5.1",
+    "react-dom": ">=16.5.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/necolas/react-native-web.git"
+  },
+  "sideEffects": false,
+  "tags": [
+    "react"
+  ],
+  "version": "0.9.13"
+}
