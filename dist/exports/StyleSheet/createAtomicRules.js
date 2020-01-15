@@ -91,7 +91,7 @@ var createAtomicRules = function createAtomicRules(selector, prop, value) {
   //scrollIndicator = 'none'
   rules.push(
     `${selector}::-webkit-scrollbar{width: 0 !important}`,
-    `${selector}{overflow: -moz-scrollbars-none;-ms-overflow-style: none;}`
+    `${selector}{overflow: -moz-scrollbars-none;-ms-overflow-style: none;scrollbar-width: none;}`
   );
 
   return rules;
