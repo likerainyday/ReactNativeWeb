@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-present, Nicolas Gallagher.
+ * Copyright (c) Nicolas Gallagher.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -7,55 +7,37 @@
  * @flow
  */
 
+import type { ColorValue } from '../../types';
+import type { ViewProps } from '../View';
+
 import applyNativeMethods from '../../modules/applyNativeMethods';
-import ColorPropType from '../ColorPropType';
 import createElement from '../createElement';
 import multiplyStyleLengthValue from '../../modules/multiplyStyleLengthValue';
 import StyleSheet from '../StyleSheet';
 import UIManager from '../UIManager';
 import View from '../View';
-import ViewPropTypes from '../ViewPropTypes';
-import React, { Component } from 'react';
-import { bool, func } from 'prop-types';
+import React from 'react';
+
+type SwitchProps = {
+  ...ViewProps,
+  activeThumbColor?: ColorValue,
+  activeTrackColor?: ColorValue,
+  disabled?: boolean,
+  onValueChange?: (e: any) => void,
+  thumbColor?: ColorValue,
+  trackColor?: ColorValue | {| false: ColorValue, true: ColorValue |},
+  value?: boolean
+};
 
 const emptyObject = {};
 const thumbDefaultBoxShadow = '0px 1px 3px rgba(0,0,0,0.5)';
 const thumbFocusedBoxShadow = `${thumbDefaultBoxShadow}, 0 0 0 10px rgba(0,0,0,0.1)`;
 
-class Switch extends Component<*> {
+class Switch extends React.Component<SwitchProps> {
   _checkboxElement: HTMLInputElement;
   _thumbElement: View;
 
   static displayName = 'Switch';
-
-  static propTypes = {
-    ...ViewPropTypes,
-    activeThumbColor: ColorPropType,
-    activeTrackColor: ColorPropType,
-    disabled: bool,
-    onValueChange: func,
-    thumbColor: ColorPropType,
-    trackColor: ColorPropType,
-    value: bool,
-
-    /* eslint-disable react/sort-prop-types */
-    // Equivalent of 'activeTrackColor'
-    onTintColor: ColorPropType,
-    // Equivalent of 'thumbColor'
-    thumbTintColor: ColorPropType,
-    // Equivalent of 'trackColor'
-    tintColor: ColorPropType
-  };
-
-  static defaultProps = {
-    activeThumbColor: '#009688',
-    activeTrackColor: '#A3D3CF',
-    disabled: false,
-    style: emptyObject,
-    thumbColor: '#FAFAFA',
-    trackColor: '#939393',
-    value: false
-  };
 
   blur() {
     UIManager.blur(this._checkboxElement);
@@ -68,19 +50,14 @@ class Switch extends Component<*> {
   render() {
     const {
       accessibilityLabel,
-      activeThumbColor,
-      activeTrackColor,
-      disabled,
+      activeThumbColor = '#009688',
+      activeTrackColor = '#A3D3CF',
+      disabled = false,
       onValueChange, // eslint-disable-line
-      style,
-      thumbColor,
-      trackColor,
-      value,
-
-      // React Native compatibility
-      onTintColor,
-      thumbTintColor,
-      tintColor,
+      style = emptyObject,
+      thumbColor = '#FAFAFA',
+      trackColor = '#939393',
+      value = false,
       ...other
     } = this.props;
 
@@ -89,30 +66,33 @@ class Switch extends Component<*> {
     const minWidth = multiplyStyleLengthValue(height, 2);
     const width = styleWidth > minWidth ? styleWidth : minWidth;
     const trackBorderRadius = multiplyStyleLengthValue(height, 0.5);
-    const trackCurrentColor = value ? onTintColor || activeTrackColor : tintColor || trackColor;
-    const thumbCurrentColor = value ? activeThumbColor : thumbTintColor || thumbColor;
+    const trackCurrentColor = value
+      ? (trackColor != null && typeof trackColor === 'object' && trackColor.true) ||
+        activeTrackColor
+      : (trackColor != null && typeof trackColor === 'object' && trackColor.false) || trackColor;
+    const thumbCurrentColor = value ? activeThumbColor : thumbColor;
     const thumbHeight = height;
     const thumbWidth = thumbHeight;
 
-    const rootStyle = [styles.root, style, { height, width }, disabled && styles.cursorDefault];
+    const rootStyle = [styles.root, style, disabled && styles.cursorDefault, { height, width }];
 
     const trackStyle = [
       styles.track,
       {
-        backgroundColor: trackCurrentColor,
+        backgroundColor: disabled ? '#D5D5D5' : trackCurrentColor,
         borderRadius: trackBorderRadius
-      },
-      disabled && styles.disabledTrack
+      }
     ];
 
     const thumbStyle = [
       styles.thumb,
+      value && styles.thumbActive,
       {
-        backgroundColor: thumbCurrentColor,
+        backgroundColor: disabled ? '#BDBDBD' : thumbCurrentColor,
         height: thumbHeight,
+        marginStart: value ? multiplyStyleLengthValue(thumbWidth, -1) : 0,
         width: thumbWidth
-      },
-      disabled && styles.disabledThumb
+      }
     ];
 
     const nativeControl = createElement('input', {
@@ -130,16 +110,7 @@ class Switch extends Component<*> {
     return (
       <View {...other} style={rootStyle}>
         <View style={trackStyle} />
-        <View
-          ref={this._setThumbRef}
-          style={[
-            thumbStyle,
-            value && styles.thumbOn,
-            {
-              marginStart: value ? multiplyStyleLengthValue(thumbWidth, -1) : 0
-            }
-          ]}
-        />
+        <View ref={this._setThumbRef} style={thumbStyle} />
         {nativeControl}
       </View>
     );
@@ -185,9 +156,6 @@ const styles = StyleSheet.create({
     transitionDuration: '0.1s',
     width: '100%'
   },
-  disabledTrack: {
-    backgroundColor: '#D5D5D5'
-  },
   thumb: {
     alignSelf: 'flex-start',
     borderRadius: '100%',
@@ -196,11 +164,8 @@ const styles = StyleSheet.create({
     transform: [{ translateZ: 0 }],
     transitionDuration: '0.1s'
   },
-  thumbOn: {
+  thumbActive: {
     start: '100%'
-  },
-  disabledThumb: {
-    backgroundColor: '#BDBDBD'
   },
   nativeControl: {
     ...StyleSheet.absoluteFillObject,

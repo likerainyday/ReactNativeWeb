@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2017-present, Nicolas Gallagher.
- * Copyright (c) 2017-present, Facebook, Inc.
+ * Copyright (c) Nicolas Gallagher.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -8,42 +8,28 @@
  * @flow
  */
 
+import type { ViewProps } from '../View';
+
 import applyNativeMethods from '../../modules/applyNativeMethods';
-import ColorPropType from '../ColorPropType';
 import createElement from '../createElement';
 import StyleSheet from '../StyleSheet';
 import UIManager from '../UIManager';
 import View from '../View';
-import ViewPropTypes, { type ViewProps } from '../ViewPropTypes';
-import React, { Component } from 'react';
-import { bool, func } from 'prop-types';
+import React from 'react';
 
-type Props = ViewProps & {
-  color?: ColorPropType,
+type CheckBoxProps = {
+  ...ViewProps,
+  color?: ?string,
   disabled?: boolean,
-  onChange?: Function,
-  onValueChange?: Function,
+  onChange?: ?(e: any) => void,
+  onValueChange?: ?(e: any) => void,
   value?: boolean
 };
 
-class CheckBox extends Component<Props> {
+class CheckBox extends React.Component<CheckBoxProps> {
   _checkboxElement: HTMLInputElement;
 
   static displayName = 'CheckBox';
-
-  static propTypes = {
-    ...ViewPropTypes,
-    color: ColorPropType,
-    disabled: bool,
-    onChange: func,
-    onValueChange: func,
-    value: bool
-  };
-
-  static defaultProps = {
-    disabled: false,
-    value: false
-  };
 
   blur() {
     UIManager.blur(this._checkboxElement);

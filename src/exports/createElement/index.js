@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-present, Nicolas Gallagher.
+ * Copyright (c) Nicolas Gallagher.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -8,15 +8,24 @@
  */
 
 import AccessibilityUtil from '../../modules/AccessibilityUtil';
+import { canUseDOM } from 'fbjs/lib/ExecutionEnvironment';
 import createDOMProps from '../../modules/createDOMProps';
 import { injectEventPluginsByName } from 'react-dom/unstable-native-dependencies';
 import normalizeNativeEvent from '../../modules/normalizeNativeEvent';
 import React from 'react';
 import ResponderEventPlugin from '../../modules/ResponderEventPlugin';
 
-injectEventPluginsByName({
-  ResponderEventPlugin
-});
+if (canUseDOM) {
+  try {
+    injectEventPluginsByName({
+      ResponderEventPlugin
+    });
+  } catch (error) {
+    // Ignore errors caused by attempting to re-inject the plugin when app
+    // scripts are being re-evaluated (e.g., development hot reloading) while
+    // the ReactDOM instance is preserved.
+  }
+}
 
 const isModifiedEvent = event =>
   !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);

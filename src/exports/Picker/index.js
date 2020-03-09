@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2017-present, Nicolas Gallagher.
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Nicolas Gallagher.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -8,44 +8,28 @@
  * @flow
  */
 
+import type { ViewProps } from '../View';
+
 import applyNativeMethods from '../../modules/applyNativeMethods';
 import { Component } from 'react';
 import createElement from '../createElement';
 import PickerItem from './PickerItem';
-import PickerItemPropType from './PickerItemPropType';
-import PickerStylePropTypes from './PickerStylePropTypes';
-import StyleSheetPropType from '../../modules/StyleSheetPropType';
-import StyleSheet from '../StyleSheet';
-import TextPropTypes from '../Text/TextPropTypes';
-import { arrayOf, bool, func, number, oneOfType, string } from 'prop-types';
-import ViewPropTypes, { type ViewProps } from '../ViewPropTypes';
+import StyleSheet, { type StyleObj } from '../StyleSheet';
 
-const pickerStyleType = StyleSheetPropType(PickerStylePropTypes);
-
-type Props = ViewProps & {
+type PickerProps = {
+  ...ViewProps,
   children?: PickerItem | Array<typeof PickerItem>,
   enabled?: boolean,
-  onValueChange?: Function,
+  onValueChange?: (number | string, number) => void,
   selectedValue?: number | string,
-  style?: pickerStyleType,
-  testID?: string,
+  style?: StyleObj,
   /* compat */
-  itemStyle?: TextPropTypes.style,
+  itemStyle?: StyleObj,
   mode?: string,
   prompt?: string
 };
 
-class Picker extends Component<Props> {
-  static propTypes = {
-    ...ViewPropTypes,
-    children: oneOfType([PickerItemPropType, arrayOf(PickerItemPropType)]),
-    enabled: bool,
-    onValueChange: func,
-    selectedValue: oneOfType([number, string]),
-    style: pickerStyleType,
-    testID: string
-  };
-
+class Picker extends Component<PickerProps> {
   static Item = PickerItem;
 
   render() {

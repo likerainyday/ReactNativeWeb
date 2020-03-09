@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2015-present, Nicolas Gallagher.
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Nicolas Gallagher.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -8,77 +8,65 @@
  * @flow
  */
 
+import type { TextProps } from './types';
+
 import applyLayout from '../../modules/applyLayout';
 import applyNativeMethods from '../../modules/applyNativeMethods';
-import { bool } from 'prop-types';
-import { Component } from 'react';
 import createElement from '../createElement';
+import css from '../StyleSheet/css';
+import filterSupportedProps from '../View/filterSupportedProps';
+import React from 'react';
 import StyleSheet from '../StyleSheet';
-import TextPropTypes from './TextPropTypes';
+import TextAncestorContext from './TextAncestorContext';
 
-class Text extends Component<*> {
+class Text extends React.Component<TextProps> {
   static displayName = 'Text';
 
-  static propTypes = TextPropTypes;
+  renderText(hasTextAncestor) {
+    const { dir, forwardedRef, numberOfLines, onPress, selectable, style } = this.props;
 
-  static childContextTypes = {
-    isInAParentText: bool
-  };
-
-  static contextTypes = {
-    isInAParentText: bool
-  };
-
-  getChildContext() {
-    return { isInAParentText: true };
-  }
-
-  render() {
-    const {
-      dir,
-      numberOfLines,
-      onPress,
-      selectable,
-      style,
-      /* eslint-disable */
-      adjustsFontSizeToFit,
-      allowFontScaling,
-      ellipsizeMode,
-      lineBreakMode,
-      minimumFontScale,
-      onLayout,
-      onLongPress,
-      pressRetentionOffset,
-      selectionColor,
-      suppressHighlighting,
-      textBreakStrategy,
-      tvParallaxProperties,
-      /* eslint-enable */
-      ...otherProps
-    } = this.props;
-
-    const { isInAParentText } = this.context;
+    const supportedProps = filterSupportedProps(this.props);
 
     if (onPress) {
-      otherProps.accessible = true;
-      otherProps.onClick = this._createPressHandler(onPress);
-      otherProps.onKeyDown = this._createEnterHandler(onPress);
+      supportedProps.accessible = true;
+      supportedProps.onClick = this._createPressHandler(onPress);
+      supportedProps.onKeyDown = this._createEnterHandler(onPress);
     }
 
+    supportedProps.classList = [
+      classes.text,
+      hasTextAncestor === true && classes.textHasAncestor,
+      numberOfLines === 1 && classes.textOneLine,
+      numberOfLines != null && numberOfLines > 1 && classes.textMultiLine
+    ];
     // allow browsers to automatically infer the language writing direction
-    otherProps.dir = dir !== undefined ? dir : 'auto';
-    otherProps.style = [
-      styles.initial,
-      this.context.isInAParentText === true && styles.isInAParentText,
+    supportedProps.dir = dir !== undefined ? dir : 'auto';
+    supportedProps.ref = forwardedRef;
+    supportedProps.style = [
       style,
+      numberOfLines != null && numberOfLines > 1 && { WebkitLineClamp: numberOfLines },
       selectable === false && styles.notSelectable,
-      numberOfLines === 1 && styles.singleLineStyle,
       onPress && styles.pressable
     ];
 
-    const component = isInAParentText ? 'span' : 'div';
+    const component = hasTextAncestor ? 'span' : 'div';
 
-    return createElement(component, otherProps);
+    return createElement(component, supportedProps);
+  }
+
+  render() {
+    return (
+      <TextAncestorContext.Consumer>
+        {hasTextAncestor => {
+          const element = this.renderText(hasTextAncestor);
+          return hasTextAncestor ? (
+            element
+          ) : (
+            <TextAncestorContext.Provider value={true}>{element}</TextAncestorContext.Provider>
+          );
+        }}
+      </TextAncestorContext.Consumer>
+    );
   }
 
   _createEnterHandler(fn) {
@@ -97,41 +85,45 @@ class Text extends Component<*> {
   }
 }
 
-const styles = StyleSheet.create({
-  initial: {
-    borderWidth: 0,
+const classes = css.create({
+  text: {
+    border: '0 solid black',
     boxSizing: 'border-box',
-    color: 'inherit',
+    color: 'black',
     display: 'inline',
-    fontFamily: 'System',
-    fontSize: 14,
-    fontStyle: 'inherit',
-    fontVariant: ['inherit'],
-    fontWeight: 'inherit',
-    lineHeight: 'inherit',
+    font: '14px System',
     margin: 0,
     padding: 0,
-    textDecorationLine: 'none',
     whiteSpace: 'pre-wrap',
     wordWrap: 'break-word'
   },
-  isInAParentText: {
-    // inherit parent font styles
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
+  textHasAncestor: {
+    color: 'inherit',
+    font: 'inherit',
     whiteSpace: 'inherit'
   },
+  textOneLine: {
+    maxWidth: '100%',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap'
+  },
+  // See #13
+  textMultiLine: {
+    display: '-webkit-box',
+    maxWidth: '100%',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    WebkitBoxOrient: 'vertical'
+  }
+});
+
+const styles = StyleSheet.create({
   notSelectable: {
     userSelect: 'none'
   },
   pressable: {
     cursor: 'pointer'
-  },
-  singleLineStyle: {
-    maxWidth: '100%',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap'
   }
 });
 

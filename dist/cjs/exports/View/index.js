@@ -1,135 +1,128 @@
-'use strict';
+"use strict";
 
 exports.__esModule = true;
+exports.default = void 0;
 
-var _applyLayout = require('../../modules/applyLayout');
+var _applyLayout = _interopRequireDefault(require("../../modules/applyLayout"));
 
-var _applyLayout2 = _interopRequireDefault(_applyLayout);
+var _applyNativeMethods = _interopRequireDefault(require("../../modules/applyNativeMethods"));
 
-var _applyNativeMethods = require('../../modules/applyNativeMethods');
+var _createElement = _interopRequireDefault(require("../createElement"));
 
-var _applyNativeMethods2 = _interopRequireDefault(_applyNativeMethods);
+var _css = _interopRequireDefault(require("../StyleSheet/css"));
 
-var _propTypes = require('prop-types');
+var _filterSupportedProps = _interopRequireDefault(require("./filterSupportedProps"));
 
-var _createElement = require('../createElement');
+var _StyleSheet = _interopRequireDefault(require("../StyleSheet"));
 
-var _createElement2 = _interopRequireDefault(_createElement);
+var _TextAncestorContext = _interopRequireDefault(require("../Text/TextAncestorContext"));
 
-var _filterSupportedProps = require('./filterSupportedProps');
-
-var _filterSupportedProps2 = _interopRequireDefault(_filterSupportedProps);
-
-var _invariant = require('fbjs/lib/invariant');
-
-var _invariant2 = _interopRequireDefault(_invariant);
-
-var _StyleSheet = require('../StyleSheet');
-
-var _StyleSheet2 = _interopRequireDefault(_StyleSheet);
-
-var _ViewPropTypes = require('./ViewPropTypes');
-
-var _ViewPropTypes2 = _interopRequireDefault(_ViewPropTypes);
-
-var _react = require('react');
-
-var _react2 = _interopRequireDefault(_react);
+var _react = _interopRequireDefault(require("react"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Copyright (c) 2015-present, Nicolas Gallagher.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Copyright (c) 2015-present, Facebook, Inc.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * All rights reserved.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; subClass.__proto__ = superClass; }
 
 var calculateHitSlopStyle = function calculateHitSlopStyle(hitSlop) {
   var hitStyle = {};
+
   for (var prop in hitSlop) {
     if (hitSlop.hasOwnProperty(prop)) {
       var value = hitSlop[prop];
       hitStyle[prop] = value > 0 ? -1 * value : 0;
     }
   }
+
   return hitStyle;
 };
 
-var View = function (_Component) {
-  _inherits(View, _Component);
+var View =
+/*#__PURE__*/
+function (_React$Component) {
+  _inheritsLoose(View, _React$Component);
 
   function View() {
-    _classCallCheck(this, View);
-
-    return _possibleConstructorReturn(this, _Component.apply(this, arguments));
+    return _React$Component.apply(this, arguments) || this;
   }
 
-  View.prototype.render = function render() {
+  var _proto = View.prototype;
+
+  _proto.renderView = function renderView(hasTextAncestor) {
     var hitSlop = this.props.hitSlop;
-    var supportedProps = (0, _filterSupportedProps2.default)(this.props);
+    var supportedProps = (0, _filterSupportedProps.default)(this.props);
 
     if (process.env.NODE_ENV !== 'production') {
-      _react2.default.Children.toArray(this.props.children).forEach(function (item) {
-        (0, _invariant2.default)(typeof item !== 'string', 'Unexpected text node: ' + item + '. A text node cannot be a child of a <View>.');
+      _react.default.Children.toArray(this.props.children).forEach(function (item) {
+        if (typeof item === 'string') {
+          console.error("Unexpected text node: " + item + ". A text node cannot be a child of a <View>.");
+        }
       });
     }
 
-    var isInAParentText = this.context.isInAParentText;
-
-
-    supportedProps.style = _StyleSheet2.default.compose(styles.initial, _StyleSheet2.default.compose(isInAParentText && styles.inline, this.props.style));
+    supportedProps.classList = [classes.view];
+    supportedProps.ref = this.props.forwardedRef;
+    supportedProps.style = _StyleSheet.default.compose(hasTextAncestor && styles.inline, this.props.style);
 
     if (hitSlop) {
       var hitSlopStyle = calculateHitSlopStyle(hitSlop);
-      var hitSlopChild = (0, _createElement2.default)('span', { style: [styles.hitSlop, hitSlopStyle] });
-      supportedProps.children = _react2.default.Children.toArray([hitSlopChild, supportedProps.children]);
+      var hitSlopChild = (0, _createElement.default)('span', {
+        classList: [classes.hitSlop],
+        style: hitSlopStyle
+      });
+      supportedProps.children = _react.default.Children.toArray([hitSlopChild, supportedProps.children]);
     }
 
-    return (0, _createElement2.default)('div', supportedProps);
+    return (0, _createElement.default)('div', supportedProps);
+  };
+
+  _proto.render = function render() {
+    var _this = this;
+
+    return _react.default.createElement(_TextAncestorContext.default.Consumer, null, function (hasTextAncestor) {
+      return _this.renderView(hasTextAncestor);
+    });
   };
 
   return View;
-}(_react.Component);
+}(_react.default.Component);
 
 View.displayName = 'View';
-View.contextTypes = {
-  isInAParentText: _propTypes.bool
-};
-View.propTypes = process.env.NODE_ENV !== "production" ? _ViewPropTypes2.default : {};
 
-
-var styles = _StyleSheet2.default.create({
-  // https://github.com/facebook/css-layout#default-values
-  initial: {
+var classes = _css.default.create({
+  view: {
     alignItems: 'stretch',
-    borderWidth: 0,
-    borderStyle: 'solid',
+    border: '0 solid black',
     boxSizing: 'border-box',
     display: 'flex',
+    flexBasis: 'auto',
     flexDirection: 'column',
+    flexShrink: 0,
     margin: 0,
+    minHeight: 0,
+    minWidth: 0,
     padding: 0,
     position: 'relative',
-    zIndex: 0,
-    // fix flexbox bugs
-    minHeight: 0,
-    minWidth: 0
-  },
-  inline: {
-    display: 'inline-flex'
+    zIndex: 0
   },
   // this zIndex-ordering positions the hitSlop above the View but behind
   // its children
-  hitSlop: Object.assign({}, _StyleSheet2.default.absoluteFillObject, {
+  hitSlop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     zIndex: -1
-  })
+  }
 });
 
-exports.default = (0, _applyLayout2.default)((0, _applyNativeMethods2.default)(View));
-module.exports = exports['default'];
+var styles = _StyleSheet.default.create({
+  inline: {
+    display: 'inline-flex'
+  }
+});
+
+var _default = (0, _applyLayout.default)((0, _applyNativeMethods.default)(View));
+
+exports.default = _default;
+module.exports = exports.default;

@@ -1,41 +1,32 @@
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
-function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; subClass.__proto__ = superClass; }
 
 /**
- * Copyright (c) 2016-present, Nicolas Gallagher.
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Nicolas Gallagher.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
  * 
  */
-
 import applyNativeMethods from '../../modules/applyNativeMethods';
 import createElement from '../createElement';
+import css from '../StyleSheet/css';
 import { getAssetByID } from '../../modules/AssetRegistry';
 import resolveShadowValue from '../StyleSheet/resolveShadowValue';
 import ImageLoader from '../../modules/ImageLoader';
-import ImageResizeMode from './ImageResizeMode';
-import ImageSourcePropType from './ImageSourcePropType';
-import ImageStylePropTypes from './ImageStylePropTypes';
 import ImageUriCache from './ImageUriCache';
+import PixelRatio from '../PixelRatio';
 import StyleSheet from '../StyleSheet';
-import StyleSheetPropType from '../../modules/StyleSheetPropType';
+import TextAncestorContext from '../Text/TextAncestorContext';
 import View from '../View';
-import ViewPropTypes from '../ViewPropTypes';
-import { bool, func, number, oneOf, shape } from 'prop-types';
-import React, { Component } from 'react';
-
-var emptyObject = {};
-
+import React from 'react';
 var STATUS_ERRORED = 'ERRORED';
 var STATUS_LOADED = 'LOADED';
 var STATUS_LOADING = 'LOADING';
@@ -52,24 +43,40 @@ var resolveAssetDimensions = function resolveAssetDimensions(source) {
         height = _getAssetByID.height,
         width = _getAssetByID.width;
 
-    return { height: height, width: width };
+    return {
+      height: height,
+      width: width
+    };
   } else if (typeof source === 'object') {
     var _height = source.height,
         _width = source.width;
-
-    return { height: _height, width: _width };
+    return {
+      height: _height,
+      width: _width
+    };
   }
 };
 
 var svgDataUriPattern = /^(data:image\/svg\+xml;utf8,)(.*)/;
+
 var resolveAssetUri = function resolveAssetUri(source) {
   var uri = '';
+
   if (typeof source === 'number') {
     // get the URI from the packager
     var asset = getAssetByID(source);
     var scale = asset.scales[0];
-    var scaleSuffix = scale !== 1 ? '@' + scale + 'x' : '';
-    uri = asset ? asset.httpServerLocation + '/' + asset.name + scaleSuffix + '.' + asset.type : '';
+
+    if (asset.scales.length > 1) {
+      var preferredScale = PixelRatio.get(); // Get the scale which is closest to the preferred scale
+
+      scale = asset.scales.reduce(function (prev, curr) {
+        return Math.abs(curr - preferredScale) < Math.abs(prev - preferredScale) ? curr : prev;
+      });
+    }
+
+    var scaleSuffix = scale !== 1 ? "@" + scale + "x" : '';
+    uri = asset ? asset.httpServerLocation + "/" + asset.name + scaleSuffix + "." + asset.type : '';
   } else if (typeof source === 'string') {
     uri = source;
   } else if (source && typeof source.uri === 'string') {
@@ -77,14 +84,13 @@ var resolveAssetUri = function resolveAssetUri(source) {
   }
 
   if (uri) {
-    var match = uri.match(svgDataUriPattern);
-    // inline SVG markup may contain characters (e.g., #, ") that need to be escaped
+    var match = uri.match(svgDataUriPattern); // inline SVG markup may contain characters (e.g., #, ") that need to be escaped
+
     if (match) {
       var prefix = match[1],
           svg = match[2];
-
       var encodedSvg = encodeURIComponent(svg);
-      return '' + prefix + encodedSvg;
+      return "" + prefix + encodedSvg;
     }
   }
 
@@ -94,38 +100,55 @@ var resolveAssetUri = function resolveAssetUri(source) {
 var filterId = 0;
 
 var createTintColorSVG = function createTintColorSVG(tintColor, id) {
-  return tintColor && id != null ? React.createElement(
-    'svg',
-    { style: { position: 'absolute', height: 0, visibility: 'hidden', width: 0 } },
-    React.createElement(
-      'defs',
-      null,
-      React.createElement(
-        'filter',
-        { id: 'tint-' + id },
-        React.createElement('feFlood', { floodColor: '' + tintColor }),
-        React.createElement('feComposite', { in2: 'SourceAlpha', operator: 'atop' })
-      )
-    )
-  ) : null;
+  return tintColor && id != null ? React.createElement("svg", {
+    style: {
+      position: 'absolute',
+      height: 0,
+      visibility: 'hidden',
+      width: 0
+    }
+  }, React.createElement("defs", null, React.createElement("filter", {
+    id: "tint-" + id
+  }, React.createElement("feFlood", {
+    floodColor: "" + tintColor
+  }), React.createElement("feComposite", {
+    in2: "SourceAlpha",
+    operator: "atop"
+  })))) : null;
 };
 
-var Image = function (_Component) {
-  _inherits(Image, _Component);
+var Image =
+/*#__PURE__*/
+function (_React$Component) {
+  _inheritsLoose(Image, _React$Component);
 
   Image.getSize = function getSize(uri, success, failure) {
     ImageLoader.getSize(uri, success, failure);
   };
 
   Image.prefetch = function prefetch(uri) {
-    return ImageLoader.prefetch(uri);
+    return ImageLoader.prefetch(uri).then(function () {
+      // Add the uri to the cache so it can be immediately displayed when used
+      // but also immediately remove it to correctly reflect that it has no active references
+      ImageUriCache.add(uri);
+      ImageUriCache.remove(uri);
+    });
+  };
+
+  Image.queryCache = function queryCache(uris) {
+    var result = {};
+    uris.forEach(function (u) {
+      if (ImageUriCache.has(u)) {
+        result[u] = 'disk/memory';
+      }
+    });
+    return Promise.resolve(result);
   };
 
   function Image(props, context) {
-    _classCallCheck(this, Image);
+    var _this;
 
-    // If an image has been loaded before, render it immediately
-    var _this = _possibleConstructorReturn(this, _Component.call(this, props, context));
+    _this = _React$Component.call(this, props, context) || this; // If an image has been loaded before, render it immediately
 
     _this._filterId = 0;
     _this._imageRef = null;
@@ -139,10 +162,12 @@ var Image = function (_Component) {
       if (resizeMode === 'center' || resizeMode === 'repeat' || onLayout) {
         return function (e) {
           var layout = e.nativeEvent.layout;
-
           onLayout && onLayout(e);
+
           _this.setState(function () {
-            return { layout: layout };
+            return {
+              layout: layout
+            };
           });
         };
       }
@@ -162,7 +187,7 @@ var Image = function (_Component) {
           var x = Math.ceil(scaleFactor * naturalWidth);
           var y = Math.ceil(scaleFactor * naturalHeight);
           return {
-            backgroundSize: x + 'px ' + y + 'px'
+            backgroundSize: x + "px " + y + "px"
           };
         }
       }
@@ -174,13 +199,15 @@ var Image = function (_Component) {
           source = _this$props.source;
 
       _this._updateImageState(STATUS_ERRORED);
+
       if (onError) {
         onError({
           nativeEvent: {
-            error: 'Failed to load resource ' + resolveAssetUri(source) + ' (404)'
+            error: "Failed to load resource " + resolveAssetUri(source) + " (404)"
           }
         });
       }
+
       _this._onLoadEnd();
     };
 
@@ -188,13 +215,17 @@ var Image = function (_Component) {
       var _this$props2 = _this.props,
           onLoad = _this$props2.onLoad,
           source = _this$props2.source;
-
-      var event = { nativeEvent: e };
+      var event = {
+        nativeEvent: e
+      };
       ImageUriCache.add(resolveAssetUri(source));
+
       _this._updateImageState(STATUS_LOADED);
+
       if (onLoad) {
         onLoad(event);
       }
+
       _this._onLoadEnd();
     };
 
@@ -204,69 +235,78 @@ var Image = function (_Component) {
 
     var uri = resolveAssetUri(props.source);
     var shouldDisplaySource = ImageUriCache.has(uri);
-    _this.state = { layout: {}, shouldDisplaySource: shouldDisplaySource };
+    _this.state = {
+      layout: {},
+      shouldDisplaySource: shouldDisplaySource
+    };
     _this._imageState = getImageState(uri, shouldDisplaySource);
     _this._filterId = filterId;
     filterId++;
     return _this;
   }
 
-  Image.prototype.componentDidMount = function componentDidMount() {
+  var _proto = Image.prototype;
+
+  _proto.componentDidMount = function componentDidMount() {
     this._isMounted = true;
+
     if (this._imageState === STATUS_PENDING) {
       this._createImageLoader();
     } else if (this._imageState === STATUS_LOADED) {
-      this._onLoad({ target: this._imageRef });
+      this._onLoad({
+        target: this._imageRef
+      });
     }
   };
 
-  Image.prototype.componentDidUpdate = function componentDidUpdate(prevProps) {
+  _proto.componentDidUpdate = function componentDidUpdate(prevProps) {
     var prevUri = resolveAssetUri(prevProps.source);
     var uri = resolveAssetUri(this.props.source);
+    var hasDefaultSource = this.props.defaultSource != null;
+
     if (prevUri !== uri) {
       ImageUriCache.remove(prevUri);
       var isPreviouslyLoaded = ImageUriCache.has(uri);
       isPreviouslyLoaded && ImageUriCache.add(uri);
-      this._updateImageState(getImageState(uri, isPreviouslyLoaded));
+
+      this._updateImageState(getImageState(uri, isPreviouslyLoaded), hasDefaultSource);
+    } else if (hasDefaultSource && prevProps.defaultSource !== this.props.defaultSource) {
+      this._updateImageState(this._imageState, hasDefaultSource);
     }
+
     if (this._imageState === STATUS_PENDING) {
       this._createImageLoader();
     }
   };
 
-  Image.prototype.componentWillUnmount = function componentWillUnmount() {
+  _proto.componentWillUnmount = function componentWillUnmount() {
     var uri = resolveAssetUri(this.props.source);
     ImageUriCache.remove(uri);
+
     this._destroyImageLoader();
+
     this._isMounted = false;
   };
 
-  Image.prototype.render = function render() {
+  _proto.renderImage = function renderImage(hasTextAncestor) {
     var shouldDisplaySource = this.state.shouldDisplaySource;
-
-    var _props = this.props,
-        accessibilityLabel = _props.accessibilityLabel,
-        accessible = _props.accessible,
-        blurRadius = _props.blurRadius,
-        defaultSource = _props.defaultSource,
-        draggable = _props.draggable,
-        source = _props.source,
-        testID = _props.testID,
-        capInsets = _props.capInsets,
-        onError = _props.onError,
-        onLayout = _props.onLayout,
-        onLoad = _props.onLoad,
-        onLoadEnd = _props.onLoadEnd,
-        onLoadStart = _props.onLoadStart,
-        resizeMethod = _props.resizeMethod,
-        resizeMode = _props.resizeMode,
-        other = _objectWithoutProperties(_props, ['accessibilityLabel', 'accessible', 'blurRadius', 'defaultSource', 'draggable', 'source', 'testID', 'capInsets', 'onError', 'onLayout', 'onLoad', 'onLoadEnd', 'onLoadStart', 'resizeMethod', 'resizeMode']);
+    var _this$props3 = this.props,
+        accessibilityLabel = _this$props3.accessibilityLabel,
+        accessibilityRelationship = _this$props3.accessibilityRelationship,
+        accessibilityRole = _this$props3.accessibilityRole,
+        accessibilityState = _this$props3.accessibilityState,
+        accessible = _this$props3.accessible,
+        blurRadius = _this$props3.blurRadius,
+        defaultSource = _this$props3.defaultSource,
+        draggable = _this$props3.draggable,
+        importantForAccessibility = _this$props3.importantForAccessibility,
+        nativeID = _this$props3.nativeID,
+        pointerEvents = _this$props3.pointerEvents,
+        resizeMode = _this$props3.resizeMode,
+        source = _this$props3.source,
+        testID = _this$props3.testID;
 
     if (process.env.NODE_ENV !== 'production') {
-      if (this.props.src) {
-        console.warn('The <Image> component requires a `source` property rather than `src`.');
-      }
-
       if (this.props.children) {
         throw new Error('The <Image> component cannot contain children. If you want to render content on top of the image, consider using the <ImageBackground> component or absolute positioning.');
       }
@@ -275,82 +315,100 @@ var Image = function (_Component) {
     var selectedSource = shouldDisplaySource ? source : defaultSource;
     var displayImageUri = resolveAssetUri(selectedSource);
     var imageSizeStyle = resolveAssetDimensions(selectedSource);
-    var backgroundImage = displayImageUri ? 'url("' + displayImageUri + '")' : null;
-    var flatStyle = Object.assign({}, StyleSheet.flatten(this.props.style));
-    var finalResizeMode = resizeMode || flatStyle.resizeMode || ImageResizeMode.cover;
+    var backgroundImage = displayImageUri ? "url(\"" + displayImageUri + "\")" : null;
 
-    // CSS filters
+    var flatStyle = _objectSpread({}, StyleSheet.flatten(this.props.style));
+
+    var finalResizeMode = resizeMode || flatStyle.resizeMode || 'cover'; // CSS filters
+
     var filters = [];
     var tintColor = flatStyle.tintColor;
+
     if (flatStyle.filter) {
       filters.push(flatStyle.filter);
     }
+
     if (blurRadius) {
-      filters.push('blur(' + blurRadius + 'px)');
-    }
-    if (flatStyle.shadowOffset) {
-      var shadowString = resolveShadowValue(flatStyle);
-      if (shadowString) {
-        filters.push('drop-shadow(' + shadowString + ')');
-      }
-    }
-    if (flatStyle.tintColor) {
-      filters.push('url(#tint-' + this._filterId + ')');
+      filters.push("blur(" + blurRadius + "px)");
     }
 
-    // these styles were converted to filters
+    if (flatStyle.shadowOffset) {
+      var shadowString = resolveShadowValue(flatStyle);
+
+      if (shadowString) {
+        filters.push("drop-shadow(" + shadowString + ")");
+      }
+    }
+
+    if (flatStyle.tintColor) {
+      filters.push("url(#tint-" + this._filterId + ")");
+    } // these styles were converted to filters
+
+
     delete flatStyle.shadowColor;
     delete flatStyle.shadowOpacity;
     delete flatStyle.shadowOffset;
     delete flatStyle.shadowRadius;
-    delete flatStyle.tintColor;
-    // these styles are not supported on View
-    delete flatStyle.overlayColor;
-    delete flatStyle.resizeMode;
+    delete flatStyle.tintColor; // these styles are not supported on View
 
-    // Accessibility image allows users to trigger the browser's image context menu
+    delete flatStyle.overlayColor;
+    delete flatStyle.resizeMode; // Accessibility image allows users to trigger the browser's image context menu
+
     var hiddenImage = displayImageUri ? createElement('img', {
       alt: accessibilityLabel || '',
+      classList: [classes.accessibilityImage],
       draggable: draggable || false,
       ref: this._setImageRef,
-      src: displayImageUri,
-      style: styles.accessibilityImage
+      src: displayImageUri
     }) : null;
-
-    return React.createElement(
-      View,
-      _extends({}, other, {
-        accessibilityLabel: accessibilityLabel,
-        accessible: accessible,
-        onLayout: this._createLayoutHandler(finalResizeMode),
-        style: [styles.root, this.context.isInAParentText && styles.inline, imageSizeStyle, flatStyle],
-        testID: testID
-      }),
-      React.createElement(View, {
-        style: [styles.image, resizeModeStyles[finalResizeMode], this._getBackgroundSize(finalResizeMode), backgroundImage && { backgroundImage: backgroundImage }, filters.length > 0 && { filter: filters.join(' ') }]
-      }),
-      hiddenImage,
-      createTintColorSVG(tintColor, this._filterId)
-    );
+    return React.createElement(View, {
+      accessibilityLabel: accessibilityLabel,
+      accessibilityRelationship: accessibilityRelationship,
+      accessibilityRole: accessibilityRole,
+      accessibilityState: accessibilityState,
+      accessible: accessible,
+      importantForAccessibility: importantForAccessibility,
+      nativeID: nativeID,
+      onLayout: this._createLayoutHandler(finalResizeMode),
+      pointerEvents: pointerEvents,
+      style: [styles.root, hasTextAncestor && styles.inline, imageSizeStyle, flatStyle],
+      testID: testID
+    }, React.createElement(View, {
+      style: [styles.image, resizeModeStyles[finalResizeMode], this._getBackgroundSize(finalResizeMode), backgroundImage && {
+        backgroundImage: backgroundImage
+      }, filters.length > 0 && {
+        filter: filters.join(' ')
+      }]
+    }), hiddenImage, createTintColorSVG(tintColor, this._filterId));
   };
 
-  Image.prototype._createImageLoader = function _createImageLoader() {
+  _proto.render = function render() {
+    var _this2 = this;
+
+    return React.createElement(TextAncestorContext.Consumer, null, function (hasTextAncestor) {
+      return _this2.renderImage(hasTextAncestor);
+    });
+  };
+
+  _proto._createImageLoader = function _createImageLoader() {
     var source = this.props.source;
 
     this._destroyImageLoader();
+
     var uri = resolveAssetUri(source);
     this._imageRequestId = ImageLoader.load(uri, this._onLoad, this._onError);
+
     this._onLoadStart();
   };
 
-  Image.prototype._destroyImageLoader = function _destroyImageLoader() {
+  _proto._destroyImageLoader = function _destroyImageLoader() {
     if (this._imageRequestId) {
       ImageLoader.abort(this._imageRequestId);
       this._imageRequestId = null;
     }
   };
 
-  Image.prototype._onLoadEnd = function _onLoadEnd() {
+  _proto._onLoadEnd = function _onLoadEnd() {
     var onLoadEnd = this.props.onLoadEnd;
 
     if (onLoadEnd) {
@@ -358,59 +416,49 @@ var Image = function (_Component) {
     }
   };
 
-  Image.prototype._onLoadStart = function _onLoadStart() {
-    var onLoadStart = this.props.onLoadStart;
+  _proto._onLoadStart = function _onLoadStart() {
+    var _this$props4 = this.props,
+        defaultSource = _this$props4.defaultSource,
+        onLoadStart = _this$props4.onLoadStart;
 
-    this._updateImageState(STATUS_LOADING);
+    this._updateImageState(STATUS_LOADING, defaultSource != null);
+
     if (onLoadStart) {
       onLoadStart();
     }
   };
 
-  Image.prototype._updateImageState = function _updateImageState(status) {
+  _proto._updateImageState = function _updateImageState(status, hasDefaultSource) {
+    if (hasDefaultSource === void 0) {
+      hasDefaultSource = false;
+    }
+
     this._imageState = status;
-    var shouldDisplaySource = this._imageState === STATUS_LOADED || this._imageState === STATUS_LOADING;
-    // only triggers a re-render when the image is loading (to support PJEG), loaded, or failed
+    var shouldDisplaySource = this._imageState === STATUS_LOADED || this._imageState === STATUS_LOADING && !hasDefaultSource; // only triggers a re-render when the image is loading and has no default image (to support PJPEG), loaded, or failed
+
     if (shouldDisplaySource !== this.state.shouldDisplaySource) {
       if (this._isMounted) {
         this.setState(function () {
-          return { shouldDisplaySource: shouldDisplaySource };
+          return {
+            shouldDisplaySource: shouldDisplaySource
+          };
         });
       }
     }
   };
 
   return Image;
-}(Component);
+}(React.Component);
 
 Image.displayName = 'Image';
-Image.contextTypes = {
-  isInAParentText: bool
-};
-Image.defaultProps = {
-  style: emptyObject
-};
-Image.resizeMode = ImageResizeMode;
-Image.propTypes = process.env.NODE_ENV !== "production" ? Object.assign({}, ViewPropTypes, {
-  blurRadius: number,
-  defaultSource: ImageSourcePropType,
-  draggable: bool,
-  onError: func,
-  onLayout: func,
-  onLoad: func,
-  onLoadEnd: func,
-  onLoadStart: func,
-  resizeMode: oneOf(Object.keys(ImageResizeMode)),
-  source: ImageSourcePropType,
-  style: StyleSheetPropType(ImageStylePropTypes),
-  // compatibility with React Native
-  /* eslint-disable react/sort-prop-types */
-  capInsets: shape({ top: number, left: number, bottom: number, right: number }),
-  resizeMethod: oneOf(['auto', 'resize', 'scale'])
-  /* eslint-enable react/sort-prop-types */
-}) : {};
-
-
+var classes = css.create({
+  accessibilityImage: _objectSpread({}, StyleSheet.absoluteFillObject, {
+    height: '100%',
+    opacity: 0,
+    width: '100%',
+    zIndex: -1
+  })
+});
 var styles = StyleSheet.create({
   root: {
     flexBasis: 'auto',
@@ -420,7 +468,7 @@ var styles = StyleSheet.create({
   inline: {
     display: 'inline-flex'
   },
-  image: Object.assign({}, StyleSheet.absoluteFillObject, {
+  image: _objectSpread({}, StyleSheet.absoluteFillObject, {
     backgroundColor: 'transparent',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
@@ -428,15 +476,8 @@ var styles = StyleSheet.create({
     height: '100%',
     width: '100%',
     zIndex: -1
-  }),
-  accessibilityImage: Object.assign({}, StyleSheet.absoluteFillObject, {
-    height: '100%',
-    opacity: 0,
-    width: '100%',
-    zIndex: -1
   })
 });
-
 var resizeModeStyles = StyleSheet.create({
   center: {
     backgroundSize: 'auto'
@@ -460,5 +501,4 @@ var resizeModeStyles = StyleSheet.create({
     backgroundSize: '100% 100%'
   }
 });
-
 export default applyNativeMethods(Image);

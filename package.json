@@ -1,14 +1,8 @@
 {
-  "_args": [
-    [
-      "react-native-web@0.9.13",
-      "/Users/ryanwang/Work/codes/WebZRC/client/src/application/ReactNative/WebZRC"
-    ]
-  ],
-  "_from": "react-native-web@0.9.13",
-  "_id": "react-native-web@0.9.13",
+  "_from": "react-native-web@0.12.2",
+  "_id": "react-native-web@0.12.2",
   "_inBundle": false,
-  "_integrity": "sha512-P1nCvBVFrv3J5BXu39iS4A3fR7m0vtGaCAy4MigAtZpakIuara/98h516fDQajPqoVy2T4cQgYZUQAr+FBnppQ==",
+  "_integrity": "sha512-0YLDjwIm5LjQDOPUUregtuEBexH7oQph6x9FSAyzCM52QmM82TfrYRXXSwzI2eSdT1OzM2BTfP3zxmEL+coyhg==",
   "_location": "/react-native-web",
   "_phantomChildren": {
     "fbjs-css-vars": "1.0.2",
@@ -22,42 +16,45 @@
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "react-native-web@0.9.13",
+    "raw": "react-native-web@0.12.2",
     "name": "react-native-web",
     "escapedName": "react-native-web",
-    "rawSpec": "0.9.13",
+    "rawSpec": "0.12.2",
     "saveSpec": null,
-    "fetchSpec": "0.9.13"
+    "fetchSpec": "0.12.2"
   },
   "_requiredBy": [
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/react-native-web/-/react-native-web-0.9.13.tgz",
-  "_spec": "0.9.13",
-  "_where": "/Users/ryanwang/Work/codes/WebZRC/client/src/application/ReactNative/WebZRC",
+  "_resolved": "https://registry.npmjs.org/react-native-web/-/react-native-web-0.12.2.tgz",
+  "_shasum": "d0fe8739d222f412decc4f1de2e12f25e91e2f56",
+  "_spec": "react-native-web@0.12.2",
+  "_where": "/Users/ryanwang/Work/codes/WebZRC/webzrc",
   "author": {
     "name": "Nicolas Gallagher"
   },
   "bugs": {
     "url": "https://github.com/necolas/react-native-web/issues"
   },
+  "bundleDependencies": false,
   "dependencies": {
     "array-find-index": "^1.0.2",
     "create-react-class": "^15.6.2",
     "debounce": "^1.2.0",
     "deep-assign": "^3.0.0",
     "fbjs": "^1.0.0",
-    "hyphenate-style-name": "^1.0.2",
-    "inline-style-prefixer": "^5.0.3",
+    "hyphenate-style-name": "^1.0.3",
+    "inline-style-prefixer": "^5.1.0",
     "normalize-css-color": "^1.0.2",
     "prop-types": "^15.6.0",
     "react-timer-mixin": "^0.13.4"
   },
+  "deprecated": false,
   "description": "React Native for Web",
   "files": [
     "dist",
     "jest",
-    "jest-preset.json",
+    "jest-preset.js",
     "src",
     "!**/__tests__"
   ],
@@ -74,8 +71,10 @@
   "name": "react-native-web",
   "peerDependencies": {
     "react": ">=16.5.1",
-    "react-art": ">=16.5.1",
     "react-dom": ">=16.5.1"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
   },
   "repository": {
     "type": "git",
@@ -85,5 +84,5 @@
   "tags": [
     "react"
   ],
-  "version": "0.9.13"
+  "version": "0.12.2"
 }

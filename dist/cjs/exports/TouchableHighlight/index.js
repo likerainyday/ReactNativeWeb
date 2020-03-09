@@ -1,77 +1,56 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
 'use strict';
 
 exports.__esModule = true;
+exports.default = void 0;
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+var _applyNativeMethods = _interopRequireDefault(require("../../modules/applyNativeMethods"));
 
-var _applyNativeMethods = require('../../modules/applyNativeMethods');
+var _createReactClass = _interopRequireDefault(require("create-react-class"));
 
-var _applyNativeMethods2 = _interopRequireDefault(_applyNativeMethods);
+var _ensurePositiveDelayProps = _interopRequireDefault(require("../Touchable/ensurePositiveDelayProps"));
 
-var _ColorPropType = require('../ColorPropType');
+var React = _interopRequireWildcard(require("react"));
 
-var _ColorPropType2 = _interopRequireDefault(_ColorPropType);
+var _StyleSheet = _interopRequireDefault(require("../StyleSheet"));
 
-var _createReactClass = require('create-react-class');
+var _Touchable = _interopRequireDefault(require("../Touchable"));
 
-var _createReactClass2 = _interopRequireDefault(_createReactClass);
+var _View = _interopRequireDefault(require("../View"));
 
-var _ensureComponentIsNative = require('../../modules/ensureComponentIsNative');
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
-var _ensureComponentIsNative2 = _interopRequireDefault(_ensureComponentIsNative);
-
-var _ensurePositiveDelayProps = require('../Touchable/ensurePositiveDelayProps');
-
-var _ensurePositiveDelayProps2 = _interopRequireDefault(_ensurePositiveDelayProps);
-
-var _react = require('react');
-
-var _react2 = _interopRequireDefault(_react);
-
-var _StyleSheet = require('../StyleSheet');
-
-var _StyleSheet2 = _interopRequireDefault(_StyleSheet);
-
-var _reactTimerMixin = require('react-timer-mixin');
-
-var _reactTimerMixin2 = _interopRequireDefault(_reactTimerMixin);
-
-var _Touchable = require('../Touchable');
-
-var _Touchable2 = _interopRequireDefault(_Touchable);
-
-var _TouchableWithoutFeedback = require('../TouchableWithoutFeedback');
-
-var _TouchableWithoutFeedback2 = _interopRequireDefault(_TouchableWithoutFeedback);
-
-var _View = require('../View');
-
-var _View2 = _interopRequireDefault(_View);
-
-var _ViewPropTypes = require('../ViewPropTypes');
-
-var _ViewPropTypes2 = _interopRequireDefault(_ViewPropTypes);
-
-var _propTypes = require('prop-types');
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; } /**
-                                                                                                                                                                                                                              * Copyright (c) 2016-present, Nicolas Gallagher.
-                                                                                                                                                                                                                              * Copyright (c) 2015-present, Facebook, Inc.
-                                                                                                                                                                                                                              *
-                                                                                                                                                                                                                              * This source code is licensed under the MIT license found in the
-                                                                                                                                                                                                                              * LICENSE file in the root directory of this source tree.
-                                                                                                                                                                                                                              *
-                                                                                                                                                                                                                              * @noflow
-                                                                                                                                                                                                                              */
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 var DEFAULT_PROPS = {
   activeOpacity: 0.85,
+  delayPressOut: 100,
   underlayColor: 'black'
 };
-
-var PRESS_RETENTION_OFFSET = { top: 20, left: 20, right: 20, bottom: 30 };
+var PRESS_RETENTION_OFFSET = {
+  top: 20,
+  left: 20,
+  right: 20,
+  bottom: 30
+};
 
 /**
  * A wrapper for making views respond properly to touches.
@@ -100,212 +79,248 @@ var PRESS_RETENTION_OFFSET = { top: 20, left: 20, right: 20, bottom: 30 };
  *   );
  * },
  * ```
+ *
+ *
+ * ### Example
+ *
+ * ```ReactNativeWebPlayer
+ * import React, { Component } from 'react'
+ * import {
+ *   AppRegistry,
+ *   StyleSheet,
+ *   TouchableHighlight,
+ *   Text,
+ *   View,
+ * } from 'react-native'
+ *
+ * class App extends Component {
+ *   constructor(props) {
+ *     super(props)
+ *     this.state = { count: 0 }
+ *   }
+ *
+ *   onPress = () => {
+ *     this.setState({
+ *       count: this.state.count+1
+ *     })
+ *   }
+ *
+ *  render() {
+ *     return (
+ *       <View style={styles.container}>
+ *         <TouchableHighlight
+ *          style={styles.button}
+ *          onPress={this.onPress}
+ *         >
+ *          <Text> Touch Here </Text>
+ *         </TouchableHighlight>
+ *         <View style={[styles.countContainer]}>
+ *           <Text style={[styles.countText]}>
+ *             { this.state.count !== 0 ? this.state.count: null}
+ *           </Text>
+ *         </View>
+ *       </View>
+ *     )
+ *   }
+ * }
+ *
+ * const styles = StyleSheet.create({
+ *   container: {
+ *     flex: 1,
+ *     justifyContent: 'center',
+ *     paddingHorizontal: 10
+ *   },
+ *   button: {
+ *     alignItems: 'center',
+ *     backgroundColor: '#DDDDDD',
+ *     padding: 10
+ *   },
+ *   countContainer: {
+ *     alignItems: 'center',
+ *     padding: 10
+ *   },
+ *   countText: {
+ *     color: '#FF00FF'
+ *   }
+ * })
+ *
+ * AppRegistry.registerComponent('App', () => App)
+ * ```
+ *
  */
-
-/* eslint-disable react/prefer-es6-class */
-var TouchableHighlight = (0, _createReactClass2.default)({
+// eslint-disable-next-line react/prefer-es6-class
+var TouchableHighlight = (0, _createReactClass.default)({
   displayName: 'TouchableHighlight',
-  propTypes: Object.assign({}, _TouchableWithoutFeedback2.default.propTypes, {
-    /**
-     * Determines what the opacity of the wrapped view should be when touch is
-     * active.
-     */
-    activeOpacity: _propTypes.number,
-    /**
-     * Called immediately after the underlay is hidden
-     */
-    onHideUnderlay: _propTypes.func,
-    /**
-     * Called immediately after the underlay is shown
-     */
-    onShowUnderlay: _propTypes.func,
-    style: _ViewPropTypes2.default.style,
-    /**
-     * The color of the underlay that will show through when the touch is
-     * active.
-     */
-    underlayColor: _ColorPropType2.default
-  }),
-
-  mixins: [_reactTimerMixin2.default, _Touchable2.default.Mixin],
-
+  mixins: [_Touchable.default.Mixin.withoutDefaultFocusAndBlur],
   getDefaultProps: function getDefaultProps() {
     return DEFAULT_PROPS;
   },
-
-  // Performance optimization to avoid constantly re-generating these objects.
-  _computeSyntheticState: function _computeSyntheticState(props) {
-    return {
-      activeProps: {
-        style: {
-          opacity: props.activeOpacity
-        }
-      },
-      activeUnderlayProps: {
-        style: {
-          backgroundColor: props.underlayColor
-        }
-      },
-      underlayStyle: [INACTIVE_UNDERLAY_PROPS.style, props.style]
-    };
-  },
-
   getInitialState: function getInitialState() {
     this._isMounted = false;
-    return Object.assign({}, this.touchableGetInitialState(), this._computeSyntheticState(this.props));
-  },
 
-  componentDidMount: function componentDidMount() {
-    this._isMounted = true;
-    (0, _ensurePositiveDelayProps2.default)(this.props);
-    (0, _ensureComponentIsNative2.default)(this._childRef);
-  },
-
-  componentWillUnmount: function componentWillUnmount() {
-    this._isMounted = false;
-  },
-
-  componentDidUpdate: function componentDidUpdate() {
-    (0, _ensureComponentIsNative2.default)(this._childRef);
-  },
-
-  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-    (0, _ensurePositiveDelayProps2.default)(nextProps);
-    if (nextProps.activeOpacity !== this.props.activeOpacity || nextProps.underlayColor !== this.props.underlayColor || nextProps.style !== this.props.style) {
-      this.setState(this._computeSyntheticState(nextProps));
+    if (this.props.testOnly_pressed) {
+      return _objectSpread({}, this.touchableGetInitialState(), {
+        extraChildStyle: {
+          opacity: this.props.activeOpacity
+        },
+        extraUnderlayStyle: {
+          backgroundColor: this.props.underlayColor
+        }
+      });
+    } else {
+      return _objectSpread({}, this.touchableGetInitialState(), {
+        extraChildStyle: null,
+        extraUnderlayStyle: null
+      });
     }
   },
+  componentDidMount: function componentDidMount() {
+    this._isMounted = true;
+    (0, _ensurePositiveDelayProps.default)(this.props);
+  },
+  componentWillUnmount: function componentWillUnmount() {
+    this._isMounted = false;
+    clearTimeout(this._hideTimeout);
+  },
+  UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
+    (0, _ensurePositiveDelayProps.default)(nextProps);
+  },
+
+  /*
+  viewConfig: {
+    uiViewClassName: 'RCTView',
+    validAttributes: ReactNativeViewAttributes.RCTView,
+  },
+  */
 
   /**
    * `Touchable.Mixin` self callbacks. The mixin will invoke these if they are
    * defined on your component.
    */
   touchableHandleActivePressIn: function touchableHandleActivePressIn(e) {
-    this.clearTimeout(this._hideTimeout);
+    clearTimeout(this._hideTimeout);
     this._hideTimeout = null;
+
     this._showUnderlay();
+
     this.props.onPressIn && this.props.onPressIn(e);
   },
-
   touchableHandleActivePressOut: function touchableHandleActivePressOut(e) {
     if (!this._hideTimeout) {
       this._hideUnderlay();
     }
+
     this.props.onPressOut && this.props.onPressOut(e);
   },
-
+  touchableHandleFocus: function touchableHandleFocus(e) {
+    this.props.onFocus && this.props.onFocus(e);
+  },
+  touchableHandleBlur: function touchableHandleBlur(e) {
+    this.props.onBlur && this.props.onBlur(e);
+  },
   touchableHandlePress: function touchableHandlePress(e) {
-    this.clearTimeout(this._hideTimeout);
+    clearTimeout(this._hideTimeout);
+
     this._showUnderlay();
-    this._hideTimeout = this.setTimeout(this._hideUnderlay, this.props.delayPressOut || 100);
+
+    this._hideTimeout = setTimeout(this._hideUnderlay, this.props.delayPressOut);
     this.props.onPress && this.props.onPress(e);
   },
-
   touchableHandleLongPress: function touchableHandleLongPress(e) {
     this.props.onLongPress && this.props.onLongPress(e);
   },
-
   touchableGetPressRectOffset: function touchableGetPressRectOffset() {
     return this.props.pressRetentionOffset || PRESS_RETENTION_OFFSET;
   },
-
   touchableGetHitSlop: function touchableGetHitSlop() {
     return this.props.hitSlop;
   },
-
   touchableGetHighlightDelayMS: function touchableGetHighlightDelayMS() {
     return this.props.delayPressIn;
   },
-
   touchableGetLongPressDelayMS: function touchableGetLongPressDelayMS() {
     return this.props.delayLongPress;
   },
-
   touchableGetPressOutDelayMS: function touchableGetPressOutDelayMS() {
     return this.props.delayPressOut;
   },
-
   _showUnderlay: function _showUnderlay() {
     if (!this._isMounted || !this._hasPressHandler()) {
       return;
     }
 
-    this._underlayRef.setNativeProps(this.state.activeUnderlayProps);
-    this._childRef.setNativeProps(this.state.activeProps);
+    this.setState({
+      extraChildStyle: {
+        opacity: this.props.activeOpacity
+      },
+      extraUnderlayStyle: {
+        backgroundColor: this.props.underlayColor
+      }
+    });
     this.props.onShowUnderlay && this.props.onShowUnderlay();
   },
-
   _hideUnderlay: function _hideUnderlay() {
-    this.clearTimeout(this._hideTimeout);
+    clearTimeout(this._hideTimeout);
     this._hideTimeout = null;
-    if (this._hasPressHandler() && this._underlayRef) {
-      this._childRef.setNativeProps(INACTIVE_CHILD_PROPS);
-      this._underlayRef.setNativeProps(Object.assign({}, INACTIVE_UNDERLAY_PROPS, {
-        style: this.state.underlayStyle
-      }));
+
+    if (this.props.testOnly_pressed) {
+      return;
+    }
+
+    if (this._hasPressHandler()) {
+      this.setState({
+        extraChildStyle: null,
+        extraUnderlayStyle: null
+      });
       this.props.onHideUnderlay && this.props.onHideUnderlay();
     }
   },
-
   _hasPressHandler: function _hasPressHandler() {
     return !!(this.props.onPress || this.props.onPressIn || this.props.onPressOut || this.props.onLongPress);
   },
-
-  _setChildRef: function _setChildRef(node) {
-    this._childRef = node;
-  },
-  _setUnderlayRef: function _setUnderlayRef(node) {
-    this._underlayRef = node;
-  },
-
-
   render: function render() {
-    var _props = this.props,
-        activeOpacity = _props.activeOpacity,
-        onHideUnderlay = _props.onHideUnderlay,
-        onShowUnderlay = _props.onShowUnderlay,
-        underlayColor = _props.underlayColor,
-        delayLongPress = _props.delayLongPress,
-        delayPressIn = _props.delayPressIn,
-        delayPressOut = _props.delayPressOut,
-        onLongPress = _props.onLongPress,
-        onPress = _props.onPress,
-        onPressIn = _props.onPressIn,
-        onPressOut = _props.onPressOut,
-        pressRetentionOffset = _props.pressRetentionOffset,
-        other = _objectWithoutProperties(_props, ['activeOpacity', 'onHideUnderlay', 'onShowUnderlay', 'underlayColor', 'delayLongPress', 'delayPressIn', 'delayPressOut', 'onLongPress', 'onPress', 'onPressIn', 'onPressOut', 'pressRetentionOffset']);
-
-    return _react2.default.createElement(
-      _View2.default,
-      _extends({}, other, {
-        accessible: this.props.accessible !== false,
-        onKeyDown: this.touchableHandleKeyEvent,
-        onKeyUp: this.touchableHandleKeyEvent,
-        onResponderGrant: this.touchableHandleResponderGrant,
-        onResponderMove: this.touchableHandleResponderMove,
-        onResponderRelease: this.touchableHandleResponderRelease,
-        onResponderTerminate: this.touchableHandleResponderTerminate,
-        onResponderTerminationRequest: this.touchableHandleResponderTerminationRequest,
-        onStartShouldSetResponder: this.touchableHandleStartShouldSetResponder,
-        ref: this._setUnderlayRef,
-        style: [styles.root, !this.props.disabled && styles.actionable, this.state.underlayStyle]
-      }),
-      _react2.default.cloneElement(_react2.default.Children.only(this.props.children), {
-        ref: this._setChildRef
-      }),
-      _Touchable2.default.renderDebugView({ color: 'green', hitSlop: this.props.hitSlop })
-    );
+    var child = React.Children.only(this.props.children);
+    return React.createElement(_View.default, _extends({}, this.props, {
+      accessibilityHint: this.props.accessibilityHint,
+      accessibilityLabel: this.props.accessibilityLabel,
+      accessibilityRole: this.props.accessibilityRole,
+      accessibilityState: this.props.accessibilityState,
+      accessible: this.props.accessible !== false,
+      hitSlop: this.props.hitSlop,
+      nativeID: this.props.nativeID,
+      onKeyDown: this.touchableHandleKeyEvent //isTVSelectable={true}
+      //tvParallaxProperties={this.props.tvParallaxProperties}
+      //hasTVPreferredFocus={this.props.hasTVPreferredFocus}
+      //nextFocusDown={this.props.nextFocusDown}
+      //nextFocusForward={this.props.nextFocusForward}
+      //nextFocusLeft={this.props.nextFocusLeft}
+      //nextFocusRight={this.props.nextFocusRight}
+      //nextFocusUp={this.props.nextFocusUp}
+      //clickable={
+      //  this.props.clickable !== false && this.props.onPress !== undefined
+      //}
+      //onClick={this.touchableHandlePress}
+      ,
+      onKeyUp: this.touchableHandleKeyEvent,
+      onLayout: this.props.onLayout,
+      onResponderGrant: this.touchableHandleResponderGrant,
+      onResponderMove: this.touchableHandleResponderMove,
+      onResponderRelease: this.touchableHandleResponderRelease,
+      onResponderTerminate: this.touchableHandleResponderTerminate,
+      onResponderTerminationRequest: this.touchableHandleResponderTerminationRequest,
+      onStartShouldSetResponder: this.touchableHandleStartShouldSetResponder,
+      style: [styles.root, this.props.style, !this.props.disabled && styles.actionable, this.state.extraUnderlayStyle],
+      testID: this.props.testID
+    }), React.cloneElement(child, {
+      style: _StyleSheet.default.compose(child.props.style, this.state.extraChildStyle)
+    }), _Touchable.default.renderDebugView({
+      color: 'green',
+      hitSlop: this.props.hitSlop
+    }));
   }
 });
 
-var INACTIVE_CHILD_PROPS = {
-  style: _StyleSheet2.default.create({ x: { opacity: 1.0 } }).x
-};
-var INACTIVE_UNDERLAY_PROPS = {
-  style: _StyleSheet2.default.create({ x: { backgroundColor: 'transparent' } }).x
-};
-
-var styles = _StyleSheet2.default.create({
+var styles = _StyleSheet.default.create({
   root: {
     userSelect: 'none'
   },
@@ -315,5 +330,7 @@ var styles = _StyleSheet2.default.create({
   }
 });
 
-exports.default = (0, _applyNativeMethods2.default)(TouchableHighlight);
-module.exports = exports['default'];
+var _default = (0, _applyNativeMethods.default)(TouchableHighlight);
+
+exports.default = _default;
+module.exports = exports.default;

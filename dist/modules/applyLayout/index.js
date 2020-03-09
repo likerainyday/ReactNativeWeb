@@ -1,31 +1,29 @@
 /**
- * Copyright (c) 2015-present, Nicolas Gallagher.
+ * Copyright (c) Nicolas Gallagher.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * 
  */
-
 import { canUseDOM } from 'fbjs/lib/ExecutionEnvironment';
 import debounce from 'debounce';
 import findNodeHandle from '../../exports/findNodeHandle';
-
 var emptyObject = {};
 var registry = {};
-
 var id = 1;
+
 var guid = function guid() {
-  return 'r-' + id++;
+  return "r-" + id++;
 };
 
-var resizeObserver = void 0;
+var resizeObserver;
+
 if (canUseDOM) {
   if (typeof window.ResizeObserver !== 'undefined') {
     resizeObserver = new window.ResizeObserver(function (entries) {
       entries.forEach(function (_ref) {
         var target = _ref.target;
-
         var instance = registry[target._layoutId];
         instance && instance._handleLayout();
       });
@@ -38,6 +36,7 @@ if (canUseDOM) {
     var triggerAll = function triggerAll() {
       Object.keys(registry).forEach(function (key) {
         var instance = registry[key];
+
         instance._handleLayout();
       });
     };
@@ -52,12 +51,14 @@ var observe = function observe(instance) {
 
   if (resizeObserver) {
     var node = findNodeHandle(instance);
+
     if (node) {
       node._layoutId = id;
       resizeObserver.observe(node);
     }
   } else {
     instance._layoutId = id;
+
     instance._handleLayout();
   }
 };
@@ -65,6 +66,7 @@ var observe = function observe(instance) {
 var unobserve = function unobserve(instance) {
   if (resizeObserver) {
     var node = findNodeHandle(instance);
+
     if (node) {
       delete registry[node._layoutId];
       delete node._layoutId;
@@ -85,6 +87,7 @@ var safeOverride = function safeOverride(original, next) {
       /* eslint-enable prefer-rest-params */
     };
   }
+
   return next;
 };
 
@@ -92,15 +95,14 @@ var applyLayout = function applyLayout(Component) {
   var componentDidMount = Component.prototype.componentDidMount;
   var componentDidUpdate = Component.prototype.componentDidUpdate;
   var componentWillUnmount = Component.prototype.componentWillUnmount;
-
   Component.prototype.componentDidMount = safeOverride(componentDidMount, function componentDidMount() {
     this._layoutState = emptyObject;
     this._isMounted = true;
+
     if (this.props.onLayout) {
       observe(this);
     }
   });
-
   Component.prototype.componentDidUpdate = safeOverride(componentDidUpdate, function componentDidUpdate(prevProps) {
     if (this.props.onLayout && !prevProps.onLayout) {
       observe(this);
@@ -108,9 +110,9 @@ var applyLayout = function applyLayout(Component) {
       unobserve(this);
     }
   });
-
   Component.prototype.componentWillUnmount = safeOverride(componentWillUnmount, function componentWillUnmount() {
     this._isMounted = false;
+
     if (this.props.onLayout) {
       unobserve(this);
     }
@@ -122,12 +124,16 @@ var applyLayout = function applyLayout(Component) {
     var layout = this._layoutState;
     var onLayout = this.props.onLayout;
 
-
     if (onLayout) {
       this.measure(function (x, y, width, height) {
         if (_this._isMounted) {
           if (layout.x !== x || layout.y !== y || layout.width !== width || layout.height !== height) {
-            _this._layoutState = { x: x, y: y, width: width, height: height };
+            _this._layoutState = {
+              x: x,
+              y: y,
+              width: width,
+              height: height
+            };
             var nativeEvent = {
               layout: _this._layoutState
             };
@@ -137,12 +143,16 @@ var applyLayout = function applyLayout(Component) {
                 return findNodeHandle(_this);
               }
             });
-            onLayout({ nativeEvent: nativeEvent, timeStamp: Date.now() });
+            onLayout({
+              nativeEvent: nativeEvent,
+              timeStamp: Date.now()
+            });
           }
         }
       });
     }
   };
+
   return Component;
 };
 

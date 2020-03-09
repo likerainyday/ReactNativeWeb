@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2016-present, Nicolas Gallagher.
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Nicolas Gallagher.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -8,10 +8,12 @@
  * @flow
  */
 
+import type { ComponentType } from 'react';
+
 import StyleSheet from '../StyleSheet';
 import View from '../View';
-import { any, node } from 'prop-types';
-import React, { Component, type ComponentType } from 'react';
+import { any } from 'prop-types';
+import React from 'react';
 
 type Context = {
   rootTag: any
@@ -28,17 +30,11 @@ type State = {
   mainKey: number
 };
 
-export default class AppContainer extends Component<Props, State> {
+export default class AppContainer extends React.Component<Props, State> {
   state = { mainKey: 1 };
 
   static childContextTypes = {
     rootTag: any
-  };
-
-  static propTypes = {
-    WrapperComponent: any,
-    children: node,
-    rootTag: any.isRequired
   };
 
   getChildContext(): Context {

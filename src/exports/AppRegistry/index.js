@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2015-present, Nicolas Gallagher.
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Nicolas Gallagher.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -63,10 +63,13 @@ export default class AppRegistry {
       run: appParameters =>
         renderApplication(
           componentProviderInstrumentationHook(componentProvider),
-          appParameters.initialProps || emptyObject,
-          appParameters.rootTag,
           wrapperComponentProvider && wrapperComponentProvider(appParameters),
-          appParameters.callback
+          appParameters.callback,
+          {
+            hydrate: appParameters.hydrate || false,
+            initialProps: appParameters.initialProps || emptyObject,
+            rootTag: appParameters.rootTag
+          }
         )
     };
     return appKey;
@@ -90,15 +93,16 @@ export default class AppRegistry {
   }
 
   static runApplication(appKey: string, appParameters: Object): void {
-    const isDevelopment = process.env.NODE_ENV !== 'production';
+    const isDevelopment = process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test';
     if (isDevelopment) {
       const params = { ...appParameters };
       params.rootTag = `#${params.rootTag.id}`;
 
       console.log(
-        `Running application "${appKey}" with appParams: ${JSON.stringify(params)}.\n` +
-          `Development-level warnings: ${isDevelopment ? 'ON' : 'OFF'}.\n` +
-          `Performance optimizations: ${isDevelopment ? 'OFF' : 'ON'}.`
+        `Running application "${appKey}" with appParams:\n`,
+        params,
+        `\nDevelopment-level warnings: ${isDevelopment ? 'ON' : 'OFF'}.` +
+          `\nPerformance optimizations: ${isDevelopment ? 'OFF' : 'ON'}.`
       );
     }
 

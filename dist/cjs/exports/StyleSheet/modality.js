@@ -1,14 +1,9 @@
-'use strict';
+"use strict";
 
 exports.__esModule = true;
+exports.default = void 0;
 
-var _ExecutionEnvironment = require('fbjs/lib/ExecutionEnvironment');
-
-var _hash = require('../../vendor/hash');
-
-var _hash2 = _interopRequireDefault(_hash);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _ExecutionEnvironment = require("fbjs/lib/ExecutionEnvironment");
 
 /**
  * Adapts focus styles based on the user's active input modality (i.e., how
@@ -27,14 +22,14 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * Copyright © 2018 W3C® (MIT, ERCIM, Keio, Beihang).
  * W3C Software Notice and License: https://www.w3.org/Consortium/Legal/2015/copyright-software-and-document
  *
- * @noflow
+ * 
  */
+var focusVisibleAttributeName = 'data-focusvisible-polyfill';
+var rule = ":focus:not([" + focusVisibleAttributeName + "]){outline: none;}";
 
-var focusVisibleAttributeName = 'data-rn-' + (process.env.NODE_ENV !== 'production' ? 'focusvisible-' : '') + (0, _hash2.default)('focusvisible');
+var modality = function modality(insertRule) {
+  insertRule(rule);
 
-var rule = ':focus:not([' + focusVisibleAttributeName + ']){outline: none;}';
-
-var modality = function modality(styleElement) {
   if (!_ExecutionEnvironment.canUseDOM) {
     return;
   }
@@ -42,7 +37,6 @@ var modality = function modality(styleElement) {
   var hadKeyboardEvent = true;
   var hadFocusVisibleRecently = false;
   var hadFocusVisibleRecentlyTimeout = null;
-
   var inputTypesWhitelist = {
     text: true,
     search: true,
@@ -58,23 +52,25 @@ var modality = function modality(styleElement) {
     datetime: true,
     'datetime-local': true
   };
-
   /**
    * Helper function for legacy browsers and iframes which sometimes focus
    * elements like document, body, and non-interactive SVG.
    */
+
   function isValidFocusTarget(el) {
     if (el && el !== document && el.nodeName !== 'HTML' && el.nodeName !== 'BODY' && 'classList' in el && 'contains' in el.classList) {
       return true;
     }
+
     return false;
   }
-
   /**
    * Computes whether the given element should automatically trigger the
    * `focus-visible` attribute being added, i.e. whether it should always match
    * `:focus-visible` when focused.
    */
+
+
   function focusTriggersKeyboardModality(el) {
     var type = el.type;
     var tagName = el.tagName;
@@ -94,41 +90,47 @@ var modality = function modality(styleElement) {
 
     return false;
   }
-
   /**
    * Add the `focus-visible` attribute to the given element if it was not added by
    * the author.
    */
+
+
   function addFocusVisibleAttribute(el) {
     if (el.hasAttribute(focusVisibleAttributeName)) {
       return;
     }
+
     el.setAttribute(focusVisibleAttributeName, true);
   }
-
   /**
    * Remove the `focus-visible` attribute from the given element if it was not
    * originally added by the author.
    */
+
+
   function removeFocusVisibleAttribute(el) {
     el.removeAttribute(focusVisibleAttributeName);
   }
-
   /**
    * Remove the `focus-visible` attribute from all elements in the document.
    */
+
+
   function removeAllFocusVisibleAttributes() {
-    var list = document.querySelectorAll('[' + focusVisibleAttributeName + ']');
+    var list = document.querySelectorAll("[" + focusVisibleAttributeName + "]");
+
     for (var i = 0; i < list.length; i += 1) {
       removeFocusVisibleAttribute(list[i]);
     }
   }
-
   /**
    * Treat `keydown` as a signal that the user is in keyboard modality.
    * Apply `focus-visible` to any current active element and keep track
    * of our keyboard modality state with `hadKeyboardEvent`.
    */
+
+
   function onKeyDown(e) {
     if (e.key !== 'Tab' && (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey)) {
       return;
@@ -140,7 +142,6 @@ var modality = function modality(styleElement) {
 
     hadKeyboardEvent = true;
   }
-
   /**
    * If at any point a user clicks with a pointing device, ensure that we change
    * the modality away from keyboard.
@@ -152,19 +153,23 @@ var modality = function modality(styleElement) {
    * focused element, but one of its descendants) and we need to remove the
    * focus ring because a `blur` event doesn't occur.
    */
+
+
   function onPointerDown(e) {
     if (hadKeyboardEvent === true) {
       removeAllFocusVisibleAttributes();
     }
+
     hadKeyboardEvent = false;
   }
-
   /**
    * On `focus`, add the `focus-visible` attribute to the target if:
    * - the target received focus as a result of keyboard navigation, or
    * - the event target is an element that will likely require interaction
    *   via the keyboard (e.g. a text box)
    */
+
+
   function onFocus(e) {
     // Prevent IE from focusing the document or HTML element.
     if (!isValidFocusTarget(e.target)) {
@@ -175,10 +180,11 @@ var modality = function modality(styleElement) {
       addFocusVisibleAttribute(e.target);
     }
   }
-
   /**
    * On `blur`, remove the `focus-visible` attribute from the target.
    */
+
+
   function onBlur(e) {
     if (!isValidFocusTarget(e.target)) {
       return;
@@ -198,11 +204,12 @@ var modality = function modality(styleElement) {
       removeFocusVisibleAttribute(e.target);
     }
   }
-
   /**
    * If the user changes tabs, keep track of whether or not the previously
    * focused element had the focus-visible attribute.
    */
+
+
   function onVisibilityChange(e) {
     if (document.visibilityState === 'hidden') {
       // If the tab becomes active again, the browser will handle calling focus
@@ -212,16 +219,18 @@ var modality = function modality(styleElement) {
       if (hadFocusVisibleRecently) {
         hadKeyboardEvent = true;
       }
+
       addInitialPointerMoveListeners();
     }
   }
-
   /**
    * Add a group of listeners to detect usage of any pointing devices.
    * These listeners will be added when the polyfill first loads, and anytime
    * the window is blurred, so that they are active when the window regains
    * focus.
    */
+
+
   function addInitialPointerMoveListeners() {
     document.addEventListener('mousemove', onInitialPointerMove);
     document.addEventListener('mousedown', onInitialPointerMove);
@@ -245,13 +254,14 @@ var modality = function modality(styleElement) {
     document.removeEventListener('touchstart', onInitialPointerMove);
     document.removeEventListener('touchend', onInitialPointerMove);
   }
-
   /**
    * When the polfyill first loads, assume the user is in keyboard modality.
    * If any event is received from a pointing device (e.g. mouse, pointer,
    * touch), turn off keyboard modality.
    * This accounts for situations where focus enters the page from the URL bar.
    */
+
+
   function onInitialPointerMove(e) {
     // Work around a Safari quirk that fires a mousemove on <html> whenever the
     // window blurs, even if you're tabbing out of the page. ¯\_(ツ)_/¯
@@ -263,8 +273,6 @@ var modality = function modality(styleElement) {
     removeInitialPointerMoveListeners();
   }
 
-  styleElement.sheet.insertRule(rule, 0);
-
   document.addEventListener('keydown', onKeyDown, true);
   document.addEventListener('mousedown', onPointerDown, true);
   document.addEventListener('pointerdown', onPointerDown, true);
@@ -275,5 +283,6 @@ var modality = function modality(styleElement) {
   addInitialPointerMoveListeners();
 };
 
-exports.default = modality;
-module.exports = exports['default'];
+var _default = modality;
+exports.default = _default;
+module.exports = exports.default;

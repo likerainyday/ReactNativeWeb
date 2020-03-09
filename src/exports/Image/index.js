@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2016-present, Nicolas Gallagher.
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Nicolas Gallagher.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -8,23 +8,42 @@
  * @flow
  */
 
+import type { ViewProps } from '../View';
+import type { ResizeMode, Source, Style } from './types';
+
 import applyNativeMethods from '../../modules/applyNativeMethods';
 import createElement from '../createElement';
+import css from '../StyleSheet/css';
 import { getAssetByID } from '../../modules/AssetRegistry';
 import resolveShadowValue from '../StyleSheet/resolveShadowValue';
 import ImageLoader from '../../modules/ImageLoader';
-import ImageResizeMode from './ImageResizeMode';
-import ImageSourcePropType from './ImageSourcePropType';
-import ImageStylePropTypes from './ImageStylePropTypes';
 import ImageUriCache from './ImageUriCache';
+import PixelRatio from '../PixelRatio';
 import StyleSheet from '../StyleSheet';
-import StyleSheetPropType from '../../modules/StyleSheetPropType';
+import TextAncestorContext from '../Text/TextAncestorContext';
 import View from '../View';
-import ViewPropTypes from '../ViewPropTypes';
-import { bool, func, number, oneOf, shape } from 'prop-types';
-import React, { Component } from 'react';
+import React from 'react';
 
-const emptyObject = {};
+export type ImageProps = {
+  ...ViewProps,
+  blurRadius?: number,
+  defaultSource?: Source,
+  draggable?: boolean,
+  onError?: (e: any) => void,
+  onLayout?: (e: any) => void,
+  onLoad?: (e: any) => void,
+  onLoadEnd?: (e: any) => void,
+  onLoadStart?: (e: any) => void,
+  onProgress?: (e: any) => void,
+  resizeMode?: ResizeMode,
+  source: Source,
+  style?: Style
+};
+
+type State = {
+  layout: Object,
+  shouldDisplaySource: boolean
+};
 
 const STATUS_ERRORED = 'ERRORED';
 const STATUS_LOADED = 'LOADED';
@@ -52,7 +71,14 @@ const resolveAssetUri = source => {
   if (typeof source === 'number') {
     // get the URI from the packager
     const asset = getAssetByID(source);
-    const scale = asset.scales[0];
+    let scale = asset.scales[0];
+    if (asset.scales.length > 1) {
+      const preferredScale = PixelRatio.get();
+      // Get the scale which is closest to the preferred scale
+      scale = asset.scales.reduce((prev, curr) =>
+        Math.abs(curr - preferredScale) < Math.abs(prev - preferredScale) ? curr : prev
+      );
+    }
     const scaleSuffix = scale !== 1 ? `@${scale}x` : '';
     uri = asset ? `${asset.httpServerLocation}/${asset.name}${scaleSuffix}.${asset.type}` : '';
   } else if (typeof source === 'string') {
@@ -88,51 +114,31 @@ const createTintColorSVG = (tintColor, id) =>
     </svg>
   ) : null;
 
-type State = {
-  layout: Object,
-  shouldDisplaySource: boolean
-};
-
-class Image extends Component<*, State> {
+class Image extends React.Component<ImageProps, State> {
   static displayName = 'Image';
-
-  static contextTypes = {
-    isInAParentText: bool
-  };
-
-  static propTypes = {
-    ...ViewPropTypes,
-    blurRadius: number,
-    defaultSource: ImageSourcePropType,
-    draggable: bool,
-    onError: func,
-    onLayout: func,
-    onLoad: func,
-    onLoadEnd: func,
-    onLoadStart: func,
-    resizeMode: oneOf(Object.keys(ImageResizeMode)),
-    source: ImageSourcePropType,
-    style: StyleSheetPropType(ImageStylePropTypes),
-    // compatibility with React Native
-    /* eslint-disable react/sort-prop-types */
-    capInsets: shape({ top: number, left: number, bottom: number, right: number }),
-    resizeMethod: oneOf(['auto', 'resize', 'scale'])
-    /* eslint-enable react/sort-prop-types */
-  };
-
-  static defaultProps = {
-    style: emptyObject
-  };
 
   static getSize(uri, success, failure) {
     ImageLoader.getSize(uri, success, failure);
   }
 
   static prefetch(uri) {
-    return ImageLoader.prefetch(uri);
+    return ImageLoader.prefetch(uri).then(() => {
+      // Add the uri to the cache so it can be immediately displayed when used
+      // but also immediately remove it to correctly reflect that it has no active references
+      ImageUriCache.add(uri);
+      ImageUriCache.remove(uri);
+    });
   }
 
-  static resizeMode = ImageResizeMode;
+  static queryCache(uris) {
+    const result = {};
+    uris.forEach(u => {
+      if (ImageUriCache.has(u)) {
+        result[u] = 'disk/memory';
+      }
+    });
+    return Promise.resolve(result);
+  }
 
   _filterId = 0;
   _imageRef = null;
@@ -163,11 +169,14 @@ class Image extends Component<*, State> {
   componentDidUpdate(prevProps) {
     const prevUri = resolveAssetUri(prevProps.source);
     const uri = resolveAssetUri(this.props.source);
+    const hasDefaultSource = this.props.defaultSource != null;
     if (prevUri !== uri) {
       ImageUriCache.remove(prevUri);
       const isPreviouslyLoaded = ImageUriCache.has(uri);
       isPreviouslyLoaded && ImageUriCache.add(uri);
-      this._updateImageState(getImageState(uri, isPreviouslyLoaded));
+      this._updateImageState(getImageState(uri, isPreviouslyLoaded), hasDefaultSource);
+    } else if (hasDefaultSource && prevProps.defaultSource !== this.props.defaultSource) {
+      this._updateImageState(this._imageState, hasDefaultSource);
     }
     if (this._imageState === STATUS_PENDING) {
       this._createImageLoader();
@@ -181,34 +190,26 @@ class Image extends Component<*, State> {
     this._isMounted = false;
   }
 
-  render() {
+  renderImage(hasTextAncestor) {
     const { shouldDisplaySource } = this.state;
     const {
       accessibilityLabel,
+      accessibilityRelationship,
+      accessibilityRole,
+      accessibilityState,
       accessible,
       blurRadius,
       defaultSource,
       draggable,
-      source,
-      testID,
-      /* eslint-disable */
-      capInsets,
-      onError,
-      onLayout,
-      onLoad,
-      onLoadEnd,
-      onLoadStart,
-      resizeMethod,
+      importantForAccessibility,
+      nativeID,
+      pointerEvents,
       resizeMode,
-      /* eslint-enable */
-      ...other
+      source,
+      testID
     } = this.props;
 
     if (process.env.NODE_ENV !== 'production') {
-      if (this.props.src) {
-        console.warn('The <Image> component requires a `source` property rather than `src`.');
-      }
-
       if (this.props.children) {
         throw new Error(
           'The <Image> component cannot contain children. If you want to render content on top of the image, consider using the <ImageBackground> component or absolute positioning.'
@@ -221,7 +222,7 @@ class Image extends Component<*, State> {
     const imageSizeStyle = resolveAssetDimensions(selectedSource);
     const backgroundImage = displayImageUri ? `url("${displayImageUri}")` : null;
     const flatStyle = { ...StyleSheet.flatten(this.props.style) };
-    const finalResizeMode = resizeMode || flatStyle.resizeMode || ImageResizeMode.cover;
+    const finalResizeMode = resizeMode || flatStyle.resizeMode || 'cover';
 
     // CSS filters
     const filters = [];
@@ -256,25 +257,25 @@ class Image extends Component<*, State> {
     const hiddenImage = displayImageUri
       ? createElement('img', {
           alt: accessibilityLabel || '',
+          classList: [classes.accessibilityImage],
           draggable: draggable || false,
           ref: this._setImageRef,
-          src: displayImageUri,
-          style: styles.accessibilityImage
+          src: displayImageUri
         })
       : null;
 
     return (
       <View
-        {...other}
         accessibilityLabel={accessibilityLabel}
+        accessibilityRelationship={accessibilityRelationship}
+        accessibilityRole={accessibilityRole}
+        accessibilityState={accessibilityState}
         accessible={accessible}
+        importantForAccessibility={importantForAccessibility}
+        nativeID={nativeID}
         onLayout={this._createLayoutHandler(finalResizeMode)}
-        style={[
-          styles.root,
-          this.context.isInAParentText && styles.inline,
-          imageSizeStyle,
-          flatStyle
-        ]}
+        pointerEvents={pointerEvents}
+        style={[styles.root, hasTextAncestor && styles.inline, imageSizeStyle, flatStyle]}
         testID={testID}
       >
         <View
@@ -289,6 +290,14 @@ class Image extends Component<*, State> {
         {hiddenImage}
         {createTintColorSVG(tintColor, this._filterId)}
       </View>
+    );
+  }
+
+  render() {
+    return (
+      <TextAncestorContext.Consumer>
+        {hasTextAncestor => this.renderImage(hasTextAncestor)}
+      </TextAncestorContext.Consumer>
     );
   }
 
@@ -365,8 +374,8 @@ class Image extends Component<*, State> {
   }
 
   _onLoadStart() {
-    const { onLoadStart } = this.props;
-    this._updateImageState(STATUS_LOADING);
+    const { defaultSource, onLoadStart } = this.props;
+    this._updateImageState(STATUS_LOADING, defaultSource != null);
     if (onLoadStart) {
       onLoadStart();
     }
@@ -376,11 +385,12 @@ class Image extends Component<*, State> {
     this._imageRef = ref;
   };
 
-  _updateImageState(status) {
+  _updateImageState(status: ?string, hasDefaultSource: ?boolean = false) {
     this._imageState = status;
     const shouldDisplaySource =
-      this._imageState === STATUS_LOADED || this._imageState === STATUS_LOADING;
-    // only triggers a re-render when the image is loading (to support PJEG), loaded, or failed
+      this._imageState === STATUS_LOADED ||
+      (this._imageState === STATUS_LOADING && !hasDefaultSource);
+    // only triggers a re-render when the image is loading and has no default image (to support PJPEG), loaded, or failed
     if (shouldDisplaySource !== this.state.shouldDisplaySource) {
       if (this._isMounted) {
         this.setState(() => ({ shouldDisplaySource }));
@@ -388,6 +398,16 @@ class Image extends Component<*, State> {
     }
   }
 }
+
+const classes = css.create({
+  accessibilityImage: {
+    ...StyleSheet.absoluteFillObject,
+    height: '100%',
+    opacity: 0,
+    width: '100%',
+    zIndex: -1
+  }
+});
 
 const styles = StyleSheet.create({
   root: {
@@ -405,13 +425,6 @@ const styles = StyleSheet.create({
     backgroundRepeat: 'no-repeat',
     backgroundSize: 'cover',
     height: '100%',
-    width: '100%',
-    zIndex: -1
-  },
-  accessibilityImage: {
-    ...StyleSheet.absoluteFillObject,
-    height: '100%',
-    opacity: 0,
     width: '100%',
     zIndex: -1
   }

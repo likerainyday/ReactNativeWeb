@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2015-present, Nicolas Gallagher.
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Nicolas Gallagher.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -8,19 +8,18 @@
  * @flow
  */
 
+import type { TextInputProps } from './types';
+
 import applyLayout from '../../modules/applyLayout';
 import applyNativeMethods from '../../modules/applyNativeMethods';
 import { canUseDOM } from 'fbjs/lib/ExecutionEnvironment';
-import { Component } from 'react';
-import ColorPropType from '../ColorPropType';
 import createElement from '../createElement';
+import css from '../StyleSheet/css';
+import filterSupportedProps from '../View/filterSupportedProps';
 import findNodeHandle from '../findNodeHandle';
+import React from 'react';
 import StyleSheet from '../StyleSheet';
-import StyleSheetPropType from '../../modules/StyleSheetPropType';
-import TextInputStylePropTypes from './TextInputStylePropTypes';
 import TextInputState from '../../modules/TextInputState';
-import ViewPropTypes from '../ViewPropTypes';
-import { any, bool, func, number, oneOf, shape, string } from 'prop-types';
 
 const isAndroid = canUseDOM && /Android/i.test(navigator && navigator.userAgent);
 const emptyObject = {};
@@ -40,7 +39,7 @@ const normalizeEventHandler = handler => e => {
  * selection state.
  */
 const isSelectionStale = (node, selection) => {
-  if (node && selection) {
+  if (node != null && selection != null) {
     const { selectionEnd, selectionStart } = node;
     const { start, end } = selection;
     return start !== selectionStart || end !== selectionEnd;
@@ -54,7 +53,7 @@ const isSelectionStale = (node, selection) => {
  */
 const setSelection = (node, selection) => {
   try {
-    if (isSelectionStale(node, selection)) {
+    if (node != null && selection != null && isSelectionStale(node, selection)) {
       const { start, end } = selection;
       // workaround for Blink on Android: see https://github.com/text-mask/text-mask/issues/300
       if (isAndroid) {
@@ -66,91 +65,14 @@ const setSelection = (node, selection) => {
   } catch (e) {}
 };
 
-class TextInput extends Component<*> {
+class TextInput extends React.Component<TextInputProps> {
   _node: HTMLInputElement;
+  _nodeHeight: number;
+  _nodeWidth: number;
 
   static displayName = 'TextInput';
 
-  static propTypes = {
-    ...ViewPropTypes,
-    autoCapitalize: oneOf(['characters', 'none', 'sentences', 'words']),
-    autoComplete: string,
-    autoCorrect: bool,
-    autoFocus: bool,
-    blurOnSubmit: bool,
-    clearTextOnFocus: bool,
-    defaultValue: string,
-    editable: bool,
-    inputAccessoryViewID: string,
-    keyboardType: oneOf([
-      'default',
-      'email-address',
-      'number-pad',
-      'numbers-and-punctuation',
-      'numeric',
-      'phone-pad',
-      'search',
-      'url',
-      'web-search'
-    ]),
-    maxLength: number,
-    multiline: bool,
-    numberOfLines: number,
-    onBlur: func,
-    onChange: func,
-    onChangeText: func,
-    onFocus: func,
-    onKeyPress: func,
-    onSelectionChange: func,
-    onSubmitEditing: func,
-    placeholder: string,
-    placeholderTextColor: ColorPropType,
-    secureTextEntry: bool,
-    selectTextOnFocus: bool,
-    selection: shape({
-      start: number.isRequired,
-      end: number
-    }),
-    spellCheck: bool,
-    style: StyleSheetPropType(TextInputStylePropTypes),
-    value: string,
-    /* react-native compat */
-    /* eslint-disable */
-    caretHidden: bool,
-    clearButtonMode: string,
-    dataDetectorTypes: string,
-    disableFullscreenUI: bool,
-    enablesReturnKeyAutomatically: bool,
-    keyboardAppearance: string,
-    inlineImageLeft: string,
-    inlineImagePadding: number,
-    onContentSizeChange: func,
-    onEndEditing: func,
-    onScroll: func,
-    returnKeyLabel: string,
-    returnKeyType: string,
-    selectionColor: ColorPropType,
-    selectionState: any,
-    textBreakStrategy: string,
-    underlineColorAndroid: ColorPropType
-    /* eslint-enable */
-  };
-
-  static defaultProps = {
-    autoCapitalize: 'sentences',
-    autoComplete: 'on',
-    autoCorrect: true,
-    editable: true,
-    keyboardType: 'default',
-    multiline: false,
-    numberOfLines: 1,
-    secureTextEntry: false,
-    style: emptyObject
-  };
-
   static State = TextInputState;
-
-  blur: Function;
 
   clear() {
     this._node.value = '';
@@ -173,55 +95,25 @@ class TextInput extends Component<*> {
 
   render() {
     const {
-      autoCorrect,
-      editable,
-      keyboardType,
-      multiline,
-      numberOfLines,
-      secureTextEntry,
-      style,
-      /* eslint-disable */
-      blurOnSubmit,
-      clearTextOnFocus,
-      onChangeText,
-      onLayout,
-      onSelectionChange,
-      onSubmitEditing,
-      selection,
-      selectTextOnFocus,
-      spellCheck,
-      /* react-native compat */
-      accessibilityViewIsModal,
-      allowFontScaling,
-      caretHidden,
-      clearButtonMode,
-      dataDetectorTypes,
-      disableFullscreenUI,
-      enablesReturnKeyAutomatically,
-      hitSlop,
-      inlineImageLeft,
-      inlineImagePadding,
-      inputAccessoryViewID,
-      keyboardAppearance,
-      needsOffscreenAlphaCompositing,
-      onAccessibilityTap,
-      onContentSizeChange,
-      onEndEditing,
-      onMagicTap,
-      onScroll,
-      removeClippedSubviews,
-      renderToHardwareTextureAndroid,
-      returnKeyLabel,
+      autoCapitalize = 'sentences',
+      autoComplete,
+      autoCompleteType,
+      autoCorrect = true,
+      autoFocus,
+      defaultValue,
+      disabled,
+      editable = true,
+      keyboardType = 'default',
+      maxLength,
+      multiline = false,
+      numberOfLines = 1,
+      placeholder,
+      placeholderTextColor,
       returnKeyType,
-      scrollEnabled,
-      selectionColor,
-      selectionState,
-      shouldRasterizeIOS,
-      textBreakStrategy,
-      textContentType,
-      underlineColorAndroid,
-      /* eslint-enable */
-      ...otherProps
+      secureTextEntry = false,
+      spellCheck,
+      style,
+      value
     } = this.props;
 
     let type;
@@ -253,29 +145,43 @@ class TextInput extends Component<*> {
     }
 
     const component = multiline ? 'textarea' : 'input';
+    const supportedProps = filterSupportedProps(this.props);
 
-    Object.assign(otherProps, {
+    Object.assign(supportedProps, {
+      autoCapitalize,
+      autoComplete: autoComplete || autoCompleteType || 'on',
       autoCorrect: autoCorrect ? 'on' : 'off',
+      autoFocus,
+      classList: [classes.textinput],
+      defaultValue,
       dir: 'auto',
+      disabled,
+      enterkeyhint: returnKeyType,
+      maxLength,
       onBlur: normalizeEventHandler(this._handleBlur),
       onChange: normalizeEventHandler(this._handleChange),
       onFocus: normalizeEventHandler(this._handleFocus),
       onKeyDown: this._handleKeyDown,
       onKeyPress: this._handleKeyPress,
       onSelect: normalizeEventHandler(this._handleSelectionChange),
+      placeholder,
       readOnly: !editable,
       ref: this._setNode,
       spellCheck: spellCheck != null ? spellCheck : autoCorrect,
-      style: [styles.initial, style]
+      style: StyleSheet.compose(
+        style,
+        placeholderTextColor && { placeholderTextColor }
+      ),
+      value
     });
 
     if (multiline) {
-      otherProps.rows = numberOfLines;
+      supportedProps.rows = numberOfLines;
     } else {
-      otherProps.type = type;
+      supportedProps.type = type;
     }
 
-    return createElement(component, otherProps);
+    return createElement(component, supportedProps);
   }
 
   _handleBlur = e => {
@@ -286,9 +192,30 @@ class TextInput extends Component<*> {
     }
   };
 
+  _handleContentSizeChange = () => {
+    const { onContentSizeChange, multiline } = this.props;
+    if (multiline && onContentSizeChange) {
+      const newHeight = this._node.scrollHeight;
+      const newWidth = this._node.scrollWidth;
+      if (newHeight !== this._nodeHeight || newWidth !== this._nodeWidth) {
+        this._nodeHeight = newHeight;
+        this._nodeWidth = newWidth;
+        onContentSizeChange({
+          nativeEvent: {
+            contentSize: {
+              height: this._nodeHeight,
+              width: this._nodeWidth
+            }
+          }
+        });
+      }
+    }
+  };
+
   _handleChange = e => {
     const { onChange, onChangeText } = this.props;
     const { text } = e.nativeEvent;
+    this._handleContentSizeChange();
     if (onChange) {
       onChange(e);
     }
@@ -320,14 +247,14 @@ class TextInput extends Component<*> {
     // Backspace, Escape, Tab, Cmd+Enter, and Arrow keys only fire 'keydown'
     // DOM events
     if (
-      e.which === 8 ||
-      e.which === 9 ||
-      (e.which === 13 && e.metaKey) ||
-      e.which === 27 ||
-      e.which === 37 ||
-      e.which === 38 ||
-      e.which === 39 ||
-      e.which === 40
+      e.key === 'ArrowLeft' ||
+      e.key === 'ArrowUp' ||
+      e.key === 'ArrowRight' ||
+      e.key === 'ArrowDown' ||
+      e.key === 'Backspace' ||
+      e.key === 'Escape' ||
+      (e.key === 'Enter' && e.metaKey) ||
+      e.key === 'Tab'
     ) {
       this._handleKeyPress(e);
     }
@@ -339,46 +266,7 @@ class TextInput extends Component<*> {
     const shouldBlurOnSubmit = blurOnSubmit == null ? blurOnSubmitDefault : blurOnSubmit;
 
     if (onKeyPress) {
-      let keyValue;
-      switch (e.which) {
-        case 8:
-          keyValue = 'Backspace';
-          break;
-        case 9:
-          keyValue = 'Tab';
-          break;
-        case 13:
-          keyValue = 'Enter';
-          break;
-        case 27:
-          keyValue = 'Escape';
-          break;
-        case 32:
-          keyValue = ' ';
-          break;
-        case 37:
-          keyValue = 'ArrowLeft';
-          break;
-        case 38:
-          keyValue = 'ArrowUp';
-          break;
-        case 39:
-          keyValue = 'ArrowRight';
-          break;
-        case 40:
-          keyValue = 'ArrowDown';
-          break;
-        default: {
-          // Trim to only care about the keys that have a textual representation
-          if (e.shiftKey) {
-            keyValue = String.fromCharCode(e.which).trim();
-          } else {
-            keyValue = String.fromCharCode(e.which)
-              .toLowerCase()
-              .trim();
-          }
-        }
-      }
+      const keyValue = e.key;
 
       if (keyValue) {
         e.nativeEvent = {
@@ -393,7 +281,7 @@ class TextInput extends Component<*> {
       }
     }
 
-    if (!e.isDefaultPrevented() && e.which === 13 && !e.shiftKey) {
+    if (!e.isDefaultPrevented() && e.key === 'Enter' && !e.shiftKey) {
       if ((blurOnSubmit || !multiline) && onSubmitEditing) {
         // prevent "Enter" from inserting a newline
         e.preventDefault();
@@ -401,6 +289,7 @@ class TextInput extends Component<*> {
         onSubmitEditing(e);
       }
       if (shouldBlurOnSubmit) {
+        // $FlowFixMe
         this.blur();
       }
     }
@@ -425,21 +314,22 @@ class TextInput extends Component<*> {
 
   _setNode = component => {
     this._node = findNodeHandle(component);
+    if (this._node) {
+      this._handleContentSizeChange();
+    }
   };
 }
 
-const styles = StyleSheet.create({
-  initial: {
+const classes = css.create({
+  textinput: {
     MozAppearance: 'textfield',
     WebkitAppearance: 'none',
     backgroundColor: 'transparent',
-    borderColor: 'black',
+    border: '0 solid black',
     borderRadius: 0,
-    borderStyle: 'solid',
-    borderWidth: 0,
     boxSizing: 'border-box',
-    fontFamily: 'System',
-    fontSize: 14,
+    font: '14px System',
+    margin: 0,
     padding: 0,
     resize: 'none'
   }

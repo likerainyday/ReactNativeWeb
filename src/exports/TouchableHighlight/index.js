@@ -1,35 +1,44 @@
 /**
- * Copyright (c) 2016-present, Nicolas Gallagher.
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow
+ * @format
  */
+'use strict';
+
+import type { Props as TouchableWithoutFeedbackProps } from '../TouchableWithoutFeedback';
 
 import applyNativeMethods from '../../modules/applyNativeMethods';
-import ColorPropType from '../ColorPropType';
 import createReactClass from 'create-react-class';
-import ensureComponentIsNative from '../../modules/ensureComponentIsNative';
 import ensurePositiveDelayProps from '../Touchable/ensurePositiveDelayProps';
-import React from 'react';
+import * as React from 'react';
 import StyleSheet from '../StyleSheet';
-import TimerMixin from 'react-timer-mixin';
 import Touchable from '../Touchable';
-import TouchableWithoutFeedback from '../TouchableWithoutFeedback';
 import View from '../View';
-import ViewPropTypes from '../ViewPropTypes';
-import { func, number } from 'prop-types';
 
 type Event = Object;
+type PressEvent = Object;
 
 const DEFAULT_PROPS = {
   activeOpacity: 0.85,
+  delayPressOut: 100,
   underlayColor: 'black'
 };
 
 const PRESS_RETENTION_OFFSET = { top: 20, left: 20, right: 20, bottom: 30 };
+
+type Props = $ReadOnly<{|
+  ...TouchableWithoutFeedbackProps,
+  activeOpacity?: ?number,
+  underlayColor?: ?any,
+  style?: ?any,
+  onShowUnderlay?: ?() => void,
+  onHideUnderlay?: ?() => void,
+  testOnly_pressed?: ?boolean
+|}>;
 
 /**
  * A wrapper for making views respond properly to touches.
@@ -58,114 +67,160 @@ const PRESS_RETENTION_OFFSET = { top: 20, left: 20, right: 20, bottom: 30 };
  *   );
  * },
  * ```
+ *
+ *
+ * ### Example
+ *
+ * ```ReactNativeWebPlayer
+ * import React, { Component } from 'react'
+ * import {
+ *   AppRegistry,
+ *   StyleSheet,
+ *   TouchableHighlight,
+ *   Text,
+ *   View,
+ * } from 'react-native'
+ *
+ * class App extends Component {
+ *   constructor(props) {
+ *     super(props)
+ *     this.state = { count: 0 }
+ *   }
+ *
+ *   onPress = () => {
+ *     this.setState({
+ *       count: this.state.count+1
+ *     })
+ *   }
+ *
+ *  render() {
+ *     return (
+ *       <View style={styles.container}>
+ *         <TouchableHighlight
+ *          style={styles.button}
+ *          onPress={this.onPress}
+ *         >
+ *          <Text> Touch Here </Text>
+ *         </TouchableHighlight>
+ *         <View style={[styles.countContainer]}>
+ *           <Text style={[styles.countText]}>
+ *             { this.state.count !== 0 ? this.state.count: null}
+ *           </Text>
+ *         </View>
+ *       </View>
+ *     )
+ *   }
+ * }
+ *
+ * const styles = StyleSheet.create({
+ *   container: {
+ *     flex: 1,
+ *     justifyContent: 'center',
+ *     paddingHorizontal: 10
+ *   },
+ *   button: {
+ *     alignItems: 'center',
+ *     backgroundColor: '#DDDDDD',
+ *     padding: 10
+ *   },
+ *   countContainer: {
+ *     alignItems: 'center',
+ *     padding: 10
+ *   },
+ *   countText: {
+ *     color: '#FF00FF'
+ *   }
+ * })
+ *
+ * AppRegistry.registerComponent('App', () => App)
+ * ```
+ *
  */
 
-/* eslint-disable react/prefer-es6-class */
-const TouchableHighlight = createReactClass({
+// eslint-disable-next-line react/prefer-es6-class
+const TouchableHighlight = ((createReactClass({
   displayName: 'TouchableHighlight',
-  propTypes: {
-    ...TouchableWithoutFeedback.propTypes,
-    /**
-     * Determines what the opacity of the wrapped view should be when touch is
-     * active.
-     */
-    activeOpacity: number,
-    /**
-     * Called immediately after the underlay is hidden
-     */
-    onHideUnderlay: func,
-    /**
-     * Called immediately after the underlay is shown
-     */
-    onShowUnderlay: func,
-    style: ViewPropTypes.style,
-    /**
-     * The color of the underlay that will show through when the touch is
-     * active.
-     */
-    underlayColor: ColorPropType
-  },
 
-  mixins: [TimerMixin, Touchable.Mixin],
+  mixins: [Touchable.Mixin.withoutDefaultFocusAndBlur],
 
   getDefaultProps: () => DEFAULT_PROPS,
 
-  // Performance optimization to avoid constantly re-generating these objects.
-  _computeSyntheticState: function(props) {
-    return {
-      activeProps: {
-        style: {
-          opacity: props.activeOpacity
-        }
-      },
-      activeUnderlayProps: {
-        style: {
-          backgroundColor: props.underlayColor
-        }
-      },
-      underlayStyle: [INACTIVE_UNDERLAY_PROPS.style, props.style]
-    };
-  },
-
   getInitialState: function() {
     this._isMounted = false;
-    return {
-      ...this.touchableGetInitialState(),
-      ...this._computeSyntheticState(this.props)
-    };
+    if (this.props.testOnly_pressed) {
+      return {
+        ...this.touchableGetInitialState(),
+        extraChildStyle: {
+          opacity: this.props.activeOpacity
+        },
+        extraUnderlayStyle: {
+          backgroundColor: this.props.underlayColor
+        }
+      };
+    } else {
+      return {
+        ...this.touchableGetInitialState(),
+        extraChildStyle: null,
+        extraUnderlayStyle: null
+      };
+    }
   },
 
   componentDidMount: function() {
     this._isMounted = true;
     ensurePositiveDelayProps(this.props);
-    ensureComponentIsNative(this._childRef);
   },
 
   componentWillUnmount: function() {
     this._isMounted = false;
+    clearTimeout(this._hideTimeout);
   },
 
-  componentDidUpdate: function() {
-    ensureComponentIsNative(this._childRef);
-  },
-
-  componentWillReceiveProps: function(nextProps) {
+  UNSAFE_componentWillReceiveProps: function(nextProps) {
     ensurePositiveDelayProps(nextProps);
-    if (
-      nextProps.activeOpacity !== this.props.activeOpacity ||
-      nextProps.underlayColor !== this.props.underlayColor ||
-      nextProps.style !== this.props.style
-    ) {
-      this.setState(this._computeSyntheticState(nextProps));
-    }
   },
+
+  /*
+  viewConfig: {
+    uiViewClassName: 'RCTView',
+    validAttributes: ReactNativeViewAttributes.RCTView,
+  },
+  */
 
   /**
    * `Touchable.Mixin` self callbacks. The mixin will invoke these if they are
    * defined on your component.
    */
-  touchableHandleActivePressIn: function(e: Event) {
-    this.clearTimeout(this._hideTimeout);
+  touchableHandleActivePressIn: function(e: PressEvent) {
+    clearTimeout(this._hideTimeout);
     this._hideTimeout = null;
     this._showUnderlay();
     this.props.onPressIn && this.props.onPressIn(e);
   },
 
-  touchableHandleActivePressOut: function(e: Event) {
+  touchableHandleActivePressOut: function(e: PressEvent) {
     if (!this._hideTimeout) {
       this._hideUnderlay();
     }
     this.props.onPressOut && this.props.onPressOut(e);
   },
 
-  touchableHandlePress: function(e: Event) {
-    this.clearTimeout(this._hideTimeout);
+  touchableHandleFocus: function(e: Event) {
+    this.props.onFocus && this.props.onFocus(e);
+  },
+
+  touchableHandleBlur: function(e: Event) {
+    this.props.onBlur && this.props.onBlur(e);
+  },
+
+  touchableHandlePress: function(e: PressEvent) {
+    clearTimeout(this._hideTimeout);
     this._showUnderlay();
-    this._hideTimeout = this.setTimeout(this._hideUnderlay, this.props.delayPressOut || 100);
+    this._hideTimeout = setTimeout(this._hideUnderlay, this.props.delayPressOut);
     this.props.onPress && this.props.onPress(e);
   },
 
-  touchableHandleLongPress: function(e: Event) {
+  touchableHandleLongPress: function(e: PressEvent) {
     this.props.onLongPress && this.props.onLongPress(e);
   },
 
@@ -193,20 +248,27 @@ const TouchableHighlight = createReactClass({
     if (!this._isMounted || !this._hasPressHandler()) {
       return;
     }
-
-    this._underlayRef.setNativeProps(this.state.activeUnderlayProps);
-    this._childRef.setNativeProps(this.state.activeProps);
+    this.setState({
+      extraChildStyle: {
+        opacity: this.props.activeOpacity
+      },
+      extraUnderlayStyle: {
+        backgroundColor: this.props.underlayColor
+      }
+    });
     this.props.onShowUnderlay && this.props.onShowUnderlay();
   },
 
   _hideUnderlay: function() {
-    this.clearTimeout(this._hideTimeout);
+    clearTimeout(this._hideTimeout);
     this._hideTimeout = null;
-    if (this._hasPressHandler() && this._underlayRef) {
-      this._childRef.setNativeProps(INACTIVE_CHILD_PROPS);
-      this._underlayRef.setNativeProps({
-        ...INACTIVE_UNDERLAY_PROPS,
-        style: this.state.underlayStyle
+    if (this.props.testOnly_pressed) {
+      return;
+    }
+    if (this._hasPressHandler()) {
+      this.setState({
+        extraChildStyle: null,
+        extraUnderlayStyle: null
       });
       this.props.onHideUnderlay && this.props.onHideUnderlay();
     }
@@ -221,63 +283,61 @@ const TouchableHighlight = createReactClass({
     );
   },
 
-  _setChildRef(node) {
-    this._childRef = node;
-  },
-
-  _setUnderlayRef(node) {
-    this._underlayRef = node;
-  },
-
   render: function() {
-    const {
-      /* eslint-disable */
-      activeOpacity,
-      onHideUnderlay,
-      onShowUnderlay,
-      underlayColor,
-      delayLongPress,
-      delayPressIn,
-      delayPressOut,
-      onLongPress,
-      onPress,
-      onPressIn,
-      onPressOut,
-      pressRetentionOffset,
-      /* eslint-enable */
-      ...other
-    } = this.props;
-
+    const child = React.Children.only(this.props.children);
     return (
       <View
-        {...other}
+        {...this.props}
+        accessibilityHint={this.props.accessibilityHint}
+        accessibilityLabel={this.props.accessibilityLabel}
+        accessibilityRole={this.props.accessibilityRole}
+        accessibilityState={this.props.accessibilityState}
         accessible={this.props.accessible !== false}
+        hitSlop={this.props.hitSlop}
+        nativeID={this.props.nativeID}
         onKeyDown={this.touchableHandleKeyEvent}
+        //isTVSelectable={true}
+        //tvParallaxProperties={this.props.tvParallaxProperties}
+        //hasTVPreferredFocus={this.props.hasTVPreferredFocus}
+        //nextFocusDown={this.props.nextFocusDown}
+        //nextFocusForward={this.props.nextFocusForward}
+        //nextFocusLeft={this.props.nextFocusLeft}
+        //nextFocusRight={this.props.nextFocusRight}
+        //nextFocusUp={this.props.nextFocusUp}
+        //clickable={
+        //  this.props.clickable !== false && this.props.onPress !== undefined
+        //}
+        //onClick={this.touchableHandlePress}
         onKeyUp={this.touchableHandleKeyEvent}
+        onLayout={this.props.onLayout}
         onResponderGrant={this.touchableHandleResponderGrant}
         onResponderMove={this.touchableHandleResponderMove}
         onResponderRelease={this.touchableHandleResponderRelease}
         onResponderTerminate={this.touchableHandleResponderTerminate}
         onResponderTerminationRequest={this.touchableHandleResponderTerminationRequest}
         onStartShouldSetResponder={this.touchableHandleStartShouldSetResponder}
-        ref={this._setUnderlayRef}
-        style={[styles.root, !this.props.disabled && styles.actionable, this.state.underlayStyle]}
+        style={[
+          styles.root,
+          this.props.style,
+          !this.props.disabled && styles.actionable,
+          this.state.extraUnderlayStyle
+        ]}
+        testID={this.props.testID}
       >
-        {React.cloneElement(React.Children.only(this.props.children), {
-          ref: this._setChildRef
+        {React.cloneElement(child, {
+          style: StyleSheet.compose(
+            child.props.style,
+            this.state.extraChildStyle
+          )
         })}
-        {Touchable.renderDebugView({ color: 'green', hitSlop: this.props.hitSlop })}
+        {Touchable.renderDebugView({
+          color: 'green',
+          hitSlop: this.props.hitSlop
+        })}
       </View>
     );
   }
-});
-
-const INACTIVE_CHILD_PROPS = {
-  style: StyleSheet.create({ x: { opacity: 1.0 } }).x
-};
-const INACTIVE_UNDERLAY_PROPS = {
-  style: StyleSheet.create({ x: { backgroundColor: 'transparent' } }).x
-};
+}): any): React.ComponentType<Props>);
 
 const styles = StyleSheet.create({
   root: {

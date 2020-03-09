@@ -1,12 +1,14 @@
 /**
- * Copyright (c) 2016-present, Nicolas Gallagher.
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Nicolas Gallagher.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
  * @noflow
  */
+
+import type { ViewProps, ViewStyle } from '../View/types';
 
 import createReactClass from 'create-react-class';
 import dismissKeyboard from '../../modules/dismissKeyboard';
@@ -16,29 +18,26 @@ import ScrollResponder from '../../modules/ScrollResponder';
 import ScrollViewBase from './ScrollViewBase';
 import StyleSheet from '../StyleSheet';
 import View from '../View';
-import ViewPropTypes from '../ViewPropTypes';
 import React from 'react';
-import { arrayOf, bool, element, func, number, oneOf } from 'prop-types';
+
+type ScrollViewProps = {
+  ...ViewProps,
+  contentContainerStyle?: ViewStyle,
+  horizontal?: boolean,
+  keyboardDismissMode?: 'none' | 'interactive' | 'on-drag',
+  onContentSizeChange?: (e: any) => void,
+  onScroll?: (e: any) => void,
+  pagingEnabled?: boolean,
+  refreshControl?: any,
+  scrollEnabled?: boolean,
+  scrollEventThrottle?: number,
+  stickyHeaderIndices?: Array<number>
+};
 
 const emptyObject = {};
 
-/* eslint-disable react/prefer-es6-class, react/prop-types */
-const ScrollView = createReactClass({
-  propTypes: {
-    ...ViewPropTypes,
-    contentContainerStyle: ViewPropTypes.style,
-    horizontal: bool,
-    keyboardDismissMode: oneOf(['none', 'interactive', 'on-drag']),
-    onContentSizeChange: func,
-    onScroll: func,
-    pagingEnabled: bool,
-    refreshControl: element,
-    scrollEnabled: bool,
-    scrollEventThrottle: number,
-    stickyHeaderIndices: arrayOf(number),
-    style: ViewPropTypes.style
-  },
-
+/* eslint-disable react/prefer-es6-class */
+const ScrollView = ((createReactClass({
   mixins: [ScrollResponder.Mixin],
 
   getInitialState() {
@@ -253,7 +252,7 @@ const ScrollView = createReactClass({
 
   _handleScroll(e: Object) {
     if (process.env.NODE_ENV !== 'production') {
-      if (this.props.onScroll && !this.props.scrollEventThrottle) {
+      if (this.props.onScroll && this.props.scrollEventThrottle == null) {
         console.log(
           'You specified `onScroll` on a <ScrollView> but not ' +
             '`scrollEventThrottle`. You will only receive one event. ' +
@@ -278,7 +277,7 @@ const ScrollView = createReactClass({
   _setScrollViewRef(component) {
     this._scrollViewRef = component;
   }
-});
+}): any): React.ComponentType<ScrollViewProps>);
 
 const commonStyle = {
   flexGrow: 1,

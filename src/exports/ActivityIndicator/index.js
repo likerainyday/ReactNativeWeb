@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2016-present, Nicolas Gallagher.
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Nicolas Gallagher.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -8,37 +8,37 @@
  * @flow
  */
 
+import type { ViewProps } from '../View';
+
 import applyNativeMethods from '../../modules/applyNativeMethods';
 import StyleSheet from '../StyleSheet';
 import View from '../View';
-import ViewPropTypes from '../ViewPropTypes';
-import { bool, number, oneOf, oneOfType, string } from 'prop-types';
-import React, { Component } from 'react';
+import React from 'react';
 
 const createSvgCircle = style => (
   <circle cx="16" cy="16" fill="none" r="14" strokeWidth="4" style={style} />
 );
 
-class ActivityIndicator extends Component<*> {
+type ActivityIndicatorProps = {
+  ...ViewProps,
+  animating?: boolean,
+  color?: ?string,
+  hidesWhenStopped?: boolean,
+  size?: 'small' | 'large' | number
+};
+
+class ActivityIndicator extends React.Component<ActivityIndicatorProps> {
   static displayName = 'ActivityIndicator';
 
-  static propTypes = {
-    ...ViewPropTypes,
-    animating: bool,
-    color: string,
-    hidesWhenStopped: bool,
-    size: oneOfType([oneOf(['small', 'large']), number])
-  };
-
-  static defaultProps = {
-    animating: true,
-    color: '#1976D2',
-    hidesWhenStopped: true,
-    size: 'small'
-  };
-
   render() {
-    const { animating, color, hidesWhenStopped, size, style, ...other } = this.props;
+    const {
+      animating = true,
+      color = '#1976D2',
+      hidesWhenStopped = true,
+      size = 'small',
+      style,
+      ...other
+    } = this.props;
 
     const svg = (
       <svg height="100%" viewBox="0 0 32 32" width="100%">
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   },
   animation: {
     animationDuration: '0.75s',
-    animationName: [
+    animationKeyframes: [
       {
         '0%': { transform: [{ rotate: '0deg' }] },
         '100%': { transform: [{ rotate: '360deg' }] }

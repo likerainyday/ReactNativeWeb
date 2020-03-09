@@ -1,148 +1,140 @@
-'use strict';
+"use strict";
 
 exports.__esModule = true;
+exports.default = void 0;
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+var _applyNativeMethods = _interopRequireDefault(require("../../modules/applyNativeMethods"));
 
-var _applyNativeMethods = require('../../modules/applyNativeMethods');
+var _createElement = _interopRequireDefault(require("../createElement"));
 
-var _applyNativeMethods2 = _interopRequireDefault(_applyNativeMethods);
+var _multiplyStyleLengthValue = _interopRequireDefault(require("../../modules/multiplyStyleLengthValue"));
 
-var _ColorPropType = require('../ColorPropType');
+var _StyleSheet = _interopRequireDefault(require("../StyleSheet"));
 
-var _ColorPropType2 = _interopRequireDefault(_ColorPropType);
+var _UIManager = _interopRequireDefault(require("../UIManager"));
 
-var _createElement = require('../createElement');
+var _View = _interopRequireDefault(require("../View"));
 
-var _createElement2 = _interopRequireDefault(_createElement);
-
-var _multiplyStyleLengthValue = require('../../modules/multiplyStyleLengthValue');
-
-var _multiplyStyleLengthValue2 = _interopRequireDefault(_multiplyStyleLengthValue);
-
-var _StyleSheet = require('../StyleSheet');
-
-var _StyleSheet2 = _interopRequireDefault(_StyleSheet);
-
-var _UIManager = require('../UIManager');
-
-var _UIManager2 = _interopRequireDefault(_UIManager);
-
-var _View = require('../View');
-
-var _View2 = _interopRequireDefault(_View);
-
-var _ViewPropTypes = require('../ViewPropTypes');
-
-var _ViewPropTypes2 = _interopRequireDefault(_ViewPropTypes);
-
-var _react = require('react');
-
-var _react2 = _interopRequireDefault(_react);
-
-var _propTypes = require('prop-types');
+var _react = _interopRequireDefault(require("react"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Copyright (c) 2016-present, Nicolas Gallagher.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * This source code is licensed under the MIT license found in the
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * LICENSE file in the root directory of this source tree.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
+function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
+
+function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; subClass.__proto__ = superClass; }
 
 var emptyObject = {};
 var thumbDefaultBoxShadow = '0px 1px 3px rgba(0,0,0,0.5)';
-var thumbFocusedBoxShadow = thumbDefaultBoxShadow + ', 0 0 0 10px rgba(0,0,0,0.1)';
+var thumbFocusedBoxShadow = thumbDefaultBoxShadow + ", 0 0 0 10px rgba(0,0,0,0.1)";
 
-var Switch = function (_Component) {
-  _inherits(Switch, _Component);
+var Switch =
+/*#__PURE__*/
+function (_React$Component) {
+  _inheritsLoose(Switch, _React$Component);
 
   function Switch() {
-    var _temp, _this, _ret;
+    var _this;
 
-    _classCallCheck(this, Switch);
-
-    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
       args[_key] = arguments[_key];
     }
 
-    return _ret = (_temp = (_this = _possibleConstructorReturn(this, _Component.call.apply(_Component, [this].concat(args))), _this), _this._handleChange = function (event) {
-      var onValueChange = _this.props.onValueChange;
+    _this = _React$Component.call.apply(_React$Component, [this].concat(args)) || this;
 
+    _this._handleChange = function (event) {
+      var onValueChange = _this.props.onValueChange;
       onValueChange && onValueChange(event.nativeEvent.target.checked);
-    }, _this._handleFocusState = function (event) {
+    };
+
+    _this._handleFocusState = function (event) {
       var isFocused = event.nativeEvent.type === 'focus';
       var boxShadow = isFocused ? thumbFocusedBoxShadow : thumbDefaultBoxShadow;
+
       if (_this._thumbElement) {
-        _this._thumbElement.setNativeProps({ style: { boxShadow: boxShadow } });
+        _this._thumbElement.setNativeProps({
+          style: {
+            boxShadow: boxShadow
+          }
+        });
       }
-    }, _this._setCheckboxRef = function (element) {
+    };
+
+    _this._setCheckboxRef = function (element) {
       _this._checkboxElement = element;
-    }, _this._setThumbRef = function (element) {
+    };
+
+    _this._setThumbRef = function (element) {
       _this._thumbElement = element;
-    }, _temp), _possibleConstructorReturn(_this, _ret);
+    };
+
+    return _this;
   }
 
-  Switch.prototype.blur = function blur() {
-    _UIManager2.default.blur(this._checkboxElement);
+  var _proto = Switch.prototype;
+
+  _proto.blur = function blur() {
+    _UIManager.default.blur(this._checkboxElement);
   };
 
-  Switch.prototype.focus = function focus() {
-    _UIManager2.default.focus(this._checkboxElement);
+  _proto.focus = function focus() {
+    _UIManager.default.focus(this._checkboxElement);
   };
 
-  Switch.prototype.render = function render() {
-    var _props = this.props,
-        accessibilityLabel = _props.accessibilityLabel,
-        activeThumbColor = _props.activeThumbColor,
-        activeTrackColor = _props.activeTrackColor,
-        disabled = _props.disabled,
-        onValueChange = _props.onValueChange,
-        style = _props.style,
-        thumbColor = _props.thumbColor,
-        trackColor = _props.trackColor,
-        value = _props.value,
-        onTintColor = _props.onTintColor,
-        thumbTintColor = _props.thumbTintColor,
-        tintColor = _props.tintColor,
-        other = _objectWithoutProperties(_props, ['accessibilityLabel', 'activeThumbColor', 'activeTrackColor', 'disabled', 'onValueChange', 'style', 'thumbColor', 'trackColor', 'value', 'onTintColor', 'thumbTintColor', 'tintColor']);
+  _proto.render = function render() {
+    var _this$props = this.props,
+        accessibilityLabel = _this$props.accessibilityLabel,
+        _this$props$activeThu = _this$props.activeThumbColor,
+        activeThumbColor = _this$props$activeThu === void 0 ? '#009688' : _this$props$activeThu,
+        _this$props$activeTra = _this$props.activeTrackColor,
+        activeTrackColor = _this$props$activeTra === void 0 ? '#A3D3CF' : _this$props$activeTra,
+        _this$props$disabled = _this$props.disabled,
+        disabled = _this$props$disabled === void 0 ? false : _this$props$disabled,
+        onValueChange = _this$props.onValueChange,
+        _this$props$style = _this$props.style,
+        style = _this$props$style === void 0 ? emptyObject : _this$props$style,
+        _this$props$thumbColo = _this$props.thumbColor,
+        thumbColor = _this$props$thumbColo === void 0 ? '#FAFAFA' : _this$props$thumbColo,
+        _this$props$trackColo = _this$props.trackColor,
+        trackColor = _this$props$trackColo === void 0 ? '#939393' : _this$props$trackColo,
+        _this$props$value = _this$props.value,
+        value = _this$props$value === void 0 ? false : _this$props$value,
+        other = _objectWithoutPropertiesLoose(_this$props, ["accessibilityLabel", "activeThumbColor", "activeTrackColor", "disabled", "onValueChange", "style", "thumbColor", "trackColor", "value"]);
 
-    var _StyleSheet$flatten = _StyleSheet2.default.flatten(style),
+    var _StyleSheet$flatten = _StyleSheet.default.flatten(style),
         styleHeight = _StyleSheet$flatten.height,
         styleWidth = _StyleSheet$flatten.width;
 
     var height = styleHeight || 20;
-    var minWidth = (0, _multiplyStyleLengthValue2.default)(height, 2);
+    var minWidth = (0, _multiplyStyleLengthValue.default)(height, 2);
     var width = styleWidth > minWidth ? styleWidth : minWidth;
-    var trackBorderRadius = (0, _multiplyStyleLengthValue2.default)(height, 0.5);
-    var trackCurrentColor = value ? onTintColor || activeTrackColor : tintColor || trackColor;
-    var thumbCurrentColor = value ? activeThumbColor : thumbTintColor || thumbColor;
+    var trackBorderRadius = (0, _multiplyStyleLengthValue.default)(height, 0.5);
+    var trackCurrentColor = value ? trackColor != null && typeof trackColor === 'object' && trackColor.true || activeTrackColor : trackColor != null && typeof trackColor === 'object' && trackColor.false || trackColor;
+    var thumbCurrentColor = value ? activeThumbColor : thumbColor;
     var thumbHeight = height;
     var thumbWidth = thumbHeight;
-
-    var rootStyle = [styles.root, style, { height: height, width: width }, disabled && styles.cursorDefault];
-
+    var rootStyle = [styles.root, style, disabled && styles.cursorDefault, {
+      height: height,
+      width: width
+    }];
     var trackStyle = [styles.track, {
-      backgroundColor: trackCurrentColor,
+      backgroundColor: disabled ? '#D5D5D5' : trackCurrentColor,
       borderRadius: trackBorderRadius
-    }, disabled && styles.disabledTrack];
-
-    var thumbStyle = [styles.thumb, {
-      backgroundColor: thumbCurrentColor,
+    }];
+    var thumbStyle = [styles.thumb, value && styles.thumbActive, {
+      backgroundColor: disabled ? '#BDBDBD' : thumbCurrentColor,
       height: thumbHeight,
+      marginStart: value ? (0, _multiplyStyleLengthValue.default)(thumbWidth, -1) : 0,
       width: thumbWidth
-    }, disabled && styles.disabledThumb];
-
-    var nativeControl = (0, _createElement2.default)('input', {
+    }];
+    var nativeControl = (0, _createElement.default)('input', {
       accessibilityLabel: accessibilityLabel,
       checked: value,
       disabled: disabled,
@@ -153,54 +145,22 @@ var Switch = function (_Component) {
       style: [styles.nativeControl, styles.cursorInherit],
       type: 'checkbox'
     });
-
-    return _react2.default.createElement(
-      _View2.default,
-      _extends({}, other, { style: rootStyle }),
-      _react2.default.createElement(_View2.default, { style: trackStyle }),
-      _react2.default.createElement(_View2.default, {
-        ref: this._setThumbRef,
-        style: [thumbStyle, value && styles.thumbOn, {
-          marginStart: value ? (0, _multiplyStyleLengthValue2.default)(thumbWidth, -1) : 0
-        }]
-      }),
-      nativeControl
-    );
+    return _react.default.createElement(_View.default, _extends({}, other, {
+      style: rootStyle
+    }), _react.default.createElement(_View.default, {
+      style: trackStyle
+    }), _react.default.createElement(_View.default, {
+      ref: this._setThumbRef,
+      style: thumbStyle
+    }), nativeControl);
   };
 
   return Switch;
-}(_react.Component);
+}(_react.default.Component);
 
 Switch.displayName = 'Switch';
-Switch.defaultProps = {
-  activeThumbColor: '#009688',
-  activeTrackColor: '#A3D3CF',
-  disabled: false,
-  style: emptyObject,
-  thumbColor: '#FAFAFA',
-  trackColor: '#939393',
-  value: false
-};
-Switch.propTypes = process.env.NODE_ENV !== "production" ? Object.assign({}, _ViewPropTypes2.default, {
-  activeThumbColor: _ColorPropType2.default,
-  activeTrackColor: _ColorPropType2.default,
-  disabled: _propTypes.bool,
-  onValueChange: _propTypes.func,
-  thumbColor: _ColorPropType2.default,
-  trackColor: _ColorPropType2.default,
-  value: _propTypes.bool,
 
-  /* eslint-disable react/sort-prop-types */
-  // Equivalent of 'activeTrackColor'
-  onTintColor: _ColorPropType2.default,
-  // Equivalent of 'thumbColor'
-  thumbTintColor: _ColorPropType2.default,
-  // Equivalent of 'trackColor'
-  tintColor: _ColorPropType2.default
-}) : {};
-
-
-var styles = _StyleSheet2.default.create({
+var styles = _StyleSheet.default.create({
   root: {
     cursor: 'pointer',
     userSelect: 'none'
@@ -211,30 +171,26 @@ var styles = _StyleSheet2.default.create({
   cursorInherit: {
     cursor: 'inherit'
   },
-  track: Object.assign({}, _StyleSheet2.default.absoluteFillObject, {
+  track: _objectSpread({}, _StyleSheet.default.absoluteFillObject, {
     height: '70%',
     margin: 'auto',
     transitionDuration: '0.1s',
     width: '100%'
   }),
-  disabledTrack: {
-    backgroundColor: '#D5D5D5'
-  },
   thumb: {
     alignSelf: 'flex-start',
     borderRadius: '100%',
     boxShadow: thumbDefaultBoxShadow,
     start: '0%',
-    transform: [{ translateZ: 0 }],
+    transform: [{
+      translateZ: 0
+    }],
     transitionDuration: '0.1s'
   },
-  thumbOn: {
+  thumbActive: {
     start: '100%'
   },
-  disabledThumb: {
-    backgroundColor: '#BDBDBD'
-  },
-  nativeControl: Object.assign({}, _StyleSheet2.default.absoluteFillObject, {
+  nativeControl: _objectSpread({}, _StyleSheet.default.absoluteFillObject, {
     height: '100%',
     margin: 0,
     opacity: 0,
@@ -243,5 +199,7 @@ var styles = _StyleSheet2.default.create({
   })
 });
 
-exports.default = (0, _applyNativeMethods2.default)(Switch);
-module.exports = exports['default'];
+var _default = (0, _applyNativeMethods.default)(Switch);
+
+exports.default = _default;
+module.exports = exports.default;

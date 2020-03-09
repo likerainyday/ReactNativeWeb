@@ -1,26 +1,24 @@
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 /**
- * Copyright (c) 2016-present, Nicolas Gallagher.
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Nicolas Gallagher.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
  * 
  */
+var clipboardAvailable;
 
-var clipboardAvailable = void 0;
-
-var Clipboard = function () {
-  function Clipboard() {
-    _classCallCheck(this, Clipboard);
-  }
+var Clipboard =
+/*#__PURE__*/
+function () {
+  function Clipboard() {}
 
   Clipboard.isAvailable = function isAvailable() {
     if (clipboardAvailable === undefined) {
       clipboardAvailable = typeof document.queryCommandSupported === 'function' && document.queryCommandSupported('copy');
     }
+
     return clipboardAvailable;
   };
 
@@ -39,22 +37,20 @@ var Clipboard = function () {
       node.style.opacity = '0';
       node.style.position = 'absolute';
       node.style.whiteSpace = 'pre-wrap';
-      body.appendChild(node);
+      body.appendChild(node); // select the text
 
-      // select the text
       var selection = window.getSelection();
       selection.removeAllRanges();
       var range = document.createRange();
       range.selectNodeContents(node);
-      selection.addRange(range);
+      selection.addRange(range); // attempt to copy
 
-      // attempt to copy
       try {
         document.execCommand('copy');
         success = true;
-      } catch (e) {}
+      } catch (e) {} // remove selection and node
 
-      // remove selection and node
+
       selection.removeAllRanges();
       body.removeChild(node);
     }
@@ -65,4 +61,4 @@ var Clipboard = function () {
   return Clipboard;
 }();
 
-export default Clipboard;
+export { Clipboard as default };

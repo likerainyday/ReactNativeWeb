@@ -1,80 +1,45 @@
-'use strict';
+"use strict";
 
 exports.__esModule = true;
+exports.default = void 0;
 
-var _applyNativeMethods = require('../../modules/applyNativeMethods');
+var _applyNativeMethods = _interopRequireDefault(require("../../modules/applyNativeMethods"));
 
-var _applyNativeMethods2 = _interopRequireDefault(_applyNativeMethods);
+var _react = require("react");
 
-var _react = require('react');
+var _createElement = _interopRequireDefault(require("../createElement"));
 
-var _createElement = require('../createElement');
+var _PickerItem = _interopRequireDefault(require("./PickerItem"));
 
-var _createElement2 = _interopRequireDefault(_createElement);
-
-var _PickerItem = require('./PickerItem');
-
-var _PickerItem2 = _interopRequireDefault(_PickerItem);
-
-var _PickerItemPropType = require('./PickerItemPropType');
-
-var _PickerItemPropType2 = _interopRequireDefault(_PickerItemPropType);
-
-var _PickerStylePropTypes = require('./PickerStylePropTypes');
-
-var _PickerStylePropTypes2 = _interopRequireDefault(_PickerStylePropTypes);
-
-var _StyleSheetPropType = require('../../modules/StyleSheetPropType');
-
-var _StyleSheetPropType2 = _interopRequireDefault(_StyleSheetPropType);
-
-var _StyleSheet = require('../StyleSheet');
-
-var _StyleSheet2 = _interopRequireDefault(_StyleSheet);
-
-var _TextPropTypes = require('../Text/TextPropTypes');
-
-var _TextPropTypes2 = _interopRequireDefault(_TextPropTypes);
-
-var _propTypes = require('prop-types');
-
-var _ViewPropTypes = require('../ViewPropTypes');
-
-var _ViewPropTypes2 = _interopRequireDefault(_ViewPropTypes);
+var _StyleSheet = _interopRequireDefault(require("../StyleSheet"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Copyright (c) 2017-present, Nicolas Gallagher.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Copyright (c) 2015-present, Facebook, Inc.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * This source code is licensed under the MIT license found in the
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * LICENSE file in the root directory of this source tree.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
 
-var pickerStyleType = (0, _StyleSheetPropType2.default)(_PickerStylePropTypes2.default);
+function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; subClass.__proto__ = superClass; }
 
-var Picker = function (_Component) {
-  _inherits(Picker, _Component);
+var Picker =
+/*#__PURE__*/
+function (_Component) {
+  _inheritsLoose(Picker, _Component);
 
   function Picker() {
-    var _temp, _this, _ret;
+    var _this;
 
-    _classCallCheck(this, Picker);
-
-    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
       args[_key] = arguments[_key];
     }
 
-    return _ret = (_temp = (_this = _possibleConstructorReturn(this, _Component.call.apply(_Component, [this].concat(args))), _this), _this._handleChange = function (e) {
+    _this = _Component.call.apply(_Component, [this].concat(args)) || this;
+
+    _this._handleChange = function (e) {
       var onValueChange = _this.props.onValueChange;
       var _e$target = e.target,
           selectedIndex = _e$target.selectedIndex,
@@ -83,23 +48,27 @@ var Picker = function (_Component) {
       if (onValueChange) {
         onValueChange(value, selectedIndex);
       }
-    }, _temp), _possibleConstructorReturn(_this, _ret);
+    };
+
+    return _this;
   }
 
-  Picker.prototype.render = function render() {
-    var _props = this.props,
-        children = _props.children,
-        enabled = _props.enabled,
-        selectedValue = _props.selectedValue,
-        style = _props.style,
-        testID = _props.testID,
-        itemStyle = _props.itemStyle,
-        mode = _props.mode,
-        prompt = _props.prompt,
-        onValueChange = _props.onValueChange,
-        otherProps = _objectWithoutProperties(_props, ['children', 'enabled', 'selectedValue', 'style', 'testID', 'itemStyle', 'mode', 'prompt', 'onValueChange']);
+  var _proto = Picker.prototype;
 
-    return (0, _createElement2.default)('select', Object.assign({
+  _proto.render = function render() {
+    var _this$props = this.props,
+        children = _this$props.children,
+        enabled = _this$props.enabled,
+        selectedValue = _this$props.selectedValue,
+        style = _this$props.style,
+        testID = _this$props.testID,
+        itemStyle = _this$props.itemStyle,
+        mode = _this$props.mode,
+        prompt = _this$props.prompt,
+        onValueChange = _this$props.onValueChange,
+        otherProps = _objectWithoutPropertiesLoose(_this$props, ["children", "enabled", "selectedValue", "style", "testID", "itemStyle", "mode", "prompt", "onValueChange"]);
+
+    return (0, _createElement.default)('select', _objectSpread({
       children: children,
       disabled: enabled === false ? true : undefined,
       onChange: this._handleChange,
@@ -112,18 +81,9 @@ var Picker = function (_Component) {
   return Picker;
 }(_react.Component);
 
-Picker.Item = _PickerItem2.default;
-Picker.propTypes = process.env.NODE_ENV !== "production" ? Object.assign({}, _ViewPropTypes2.default, {
-  children: (0, _propTypes.oneOfType)([_PickerItemPropType2.default, (0, _propTypes.arrayOf)(_PickerItemPropType2.default)]),
-  enabled: _propTypes.bool,
-  onValueChange: _propTypes.func,
-  selectedValue: (0, _propTypes.oneOfType)([_propTypes.number, _propTypes.string]),
-  style: pickerStyleType,
-  testID: _propTypes.string
-}) : {};
+Picker.Item = _PickerItem.default;
 
-
-var styles = _StyleSheet2.default.create({
+var styles = _StyleSheet.default.create({
   initial: {
     fontFamily: 'System',
     fontSize: 'inherit',
@@ -131,5 +91,7 @@ var styles = _StyleSheet2.default.create({
   }
 });
 
-exports.default = (0, _applyNativeMethods2.default)(Picker);
-module.exports = exports['default'];
+var _default = (0, _applyNativeMethods.default)(Picker);
+
+exports.default = _default;
+module.exports = exports.default;

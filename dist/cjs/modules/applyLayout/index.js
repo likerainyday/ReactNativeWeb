@@ -1,42 +1,39 @@
-'use strict';
+"use strict";
 
 exports.__esModule = true;
+exports.default = void 0;
 
-var _ExecutionEnvironment = require('fbjs/lib/ExecutionEnvironment');
+var _ExecutionEnvironment = require("fbjs/lib/ExecutionEnvironment");
 
-var _debounce = require('debounce');
+var _debounce = _interopRequireDefault(require("debounce"));
 
-var _debounce2 = _interopRequireDefault(_debounce);
-
-var _findNodeHandle = require('../../exports/findNodeHandle');
-
-var _findNodeHandle2 = _interopRequireDefault(_findNodeHandle);
+var _findNodeHandle = _interopRequireDefault(require("../../exports/findNodeHandle"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var emptyObject = {}; /**
-                       * Copyright (c) 2015-present, Nicolas Gallagher.
-                       *
-                       * This source code is licensed under the MIT license found in the
-                       * LICENSE file in the root directory of this source tree.
-                       *
-                       * @noflow
-                       */
-
+/**
+ * Copyright (c) Nicolas Gallagher.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * 
+ */
+var emptyObject = {};
 var registry = {};
-
 var id = 1;
+
 var guid = function guid() {
-  return 'r-' + id++;
+  return "r-" + id++;
 };
 
-var resizeObserver = void 0;
+var resizeObserver;
+
 if (_ExecutionEnvironment.canUseDOM) {
   if (typeof window.ResizeObserver !== 'undefined') {
     resizeObserver = new window.ResizeObserver(function (entries) {
       entries.forEach(function (_ref) {
         var target = _ref.target;
-
         var instance = registry[target._layoutId];
         instance && instance._handleLayout();
       });
@@ -49,11 +46,12 @@ if (_ExecutionEnvironment.canUseDOM) {
     var triggerAll = function triggerAll() {
       Object.keys(registry).forEach(function (key) {
         var instance = registry[key];
+
         instance._handleLayout();
       });
     };
 
-    window.addEventListener('resize', (0, _debounce2.default)(triggerAll, 16), false);
+    window.addEventListener('resize', (0, _debounce.default)(triggerAll, 16), false);
   }
 }
 
@@ -62,20 +60,23 @@ var observe = function observe(instance) {
   registry[id] = instance;
 
   if (resizeObserver) {
-    var node = (0, _findNodeHandle2.default)(instance);
+    var node = (0, _findNodeHandle.default)(instance);
+
     if (node) {
       node._layoutId = id;
       resizeObserver.observe(node);
     }
   } else {
     instance._layoutId = id;
+
     instance._handleLayout();
   }
 };
 
 var unobserve = function unobserve(instance) {
   if (resizeObserver) {
-    var node = (0, _findNodeHandle2.default)(instance);
+    var node = (0, _findNodeHandle.default)(instance);
+
     if (node) {
       delete registry[node._layoutId];
       delete node._layoutId;
@@ -96,6 +97,7 @@ var safeOverride = function safeOverride(original, next) {
       /* eslint-enable prefer-rest-params */
     };
   }
+
   return next;
 };
 
@@ -103,15 +105,14 @@ var applyLayout = function applyLayout(Component) {
   var componentDidMount = Component.prototype.componentDidMount;
   var componentDidUpdate = Component.prototype.componentDidUpdate;
   var componentWillUnmount = Component.prototype.componentWillUnmount;
-
   Component.prototype.componentDidMount = safeOverride(componentDidMount, function componentDidMount() {
     this._layoutState = emptyObject;
     this._isMounted = true;
+
     if (this.props.onLayout) {
       observe(this);
     }
   });
-
   Component.prototype.componentDidUpdate = safeOverride(componentDidUpdate, function componentDidUpdate(prevProps) {
     if (this.props.onLayout && !prevProps.onLayout) {
       observe(this);
@@ -119,9 +120,9 @@ var applyLayout = function applyLayout(Component) {
       unobserve(this);
     }
   });
-
   Component.prototype.componentWillUnmount = safeOverride(componentWillUnmount, function componentWillUnmount() {
     this._isMounted = false;
+
     if (this.props.onLayout) {
       unobserve(this);
     }
@@ -133,29 +134,38 @@ var applyLayout = function applyLayout(Component) {
     var layout = this._layoutState;
     var onLayout = this.props.onLayout;
 
-
     if (onLayout) {
       this.measure(function (x, y, width, height) {
         if (_this._isMounted) {
           if (layout.x !== x || layout.y !== y || layout.width !== width || layout.height !== height) {
-            _this._layoutState = { x: x, y: y, width: width, height: height };
+            _this._layoutState = {
+              x: x,
+              y: y,
+              width: width,
+              height: height
+            };
             var nativeEvent = {
               layout: _this._layoutState
             };
             Object.defineProperty(nativeEvent, 'target', {
               enumerable: true,
               get: function get() {
-                return (0, _findNodeHandle2.default)(_this);
+                return (0, _findNodeHandle.default)(_this);
               }
             });
-            onLayout({ nativeEvent: nativeEvent, timeStamp: Date.now() });
+            onLayout({
+              nativeEvent: nativeEvent,
+              timeStamp: Date.now()
+            });
           }
         }
       });
     }
   };
+
   return Component;
 };
 
-exports.default = applyLayout;
-module.exports = exports['default'];
+var _default = applyLayout;
+exports.default = _default;
+module.exports = exports.default;

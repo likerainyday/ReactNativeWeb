@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-present, Nicolas Gallagher.
+ * Copyright (c) Nicolas Gallagher.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -7,12 +7,27 @@
  * @flow
  */
 
+import type { ViewProps } from '../View';
+
 import debounce from 'debounce';
 import StyleSheet from '../StyleSheet';
 import View from '../View';
-import ViewPropTypes from '../ViewPropTypes';
-import React, { Component } from 'react';
-import { bool, func, number } from 'prop-types';
+import React from 'react';
+
+type Props = {
+  ...ViewProps,
+  onMomentumScrollBegin?: (e: any) => void,
+  onMomentumScrollEnd?: (e: any) => void,
+  onScroll?: (e: any) => void,
+  onScrollBeginDrag?: (e: any) => void,
+  onScrollEndDrag?: (e: any) => void,
+  onTouchMove?: (e: any) => void,
+  onWheel?: (e: any) => void,
+  scrollEnabled?: boolean,
+  scrollEventThrottle?: number,
+  showsHorizontalScrollIndicator?: boolean,
+  showsVerticalScrollIndicator?: boolean
+};
 
 const normalizeScrollEvent = e => ({
   nativeEvent: {
@@ -47,29 +62,8 @@ const normalizeScrollEvent = e => ({
 /**
  * Encapsulates the Web-specific scroll throttling and disabling logic
  */
-export default class ScrollViewBase extends Component<*> {
+export default class ScrollViewBase extends React.Component<Props> {
   _viewRef: View;
-
-  static propTypes = {
-    ...ViewPropTypes,
-    onMomentumScrollBegin: func,
-    onMomentumScrollEnd: func,
-    onScroll: func,
-    onScrollBeginDrag: func,
-    onScrollEndDrag: func,
-    onTouchMove: func,
-    onWheel: func,
-    removeClippedSubviews: bool,
-    scrollEnabled: bool,
-    scrollEventThrottle: number,
-    showsHorizontalScrollIndicator: bool,
-    showsVerticalScrollIndicator: bool
-  };
-
-  static defaultProps = {
-    scrollEnabled: true,
-    scrollEventThrottle: 0
-  };
 
   _debouncedOnScrollEnd = debounce(this._handleScrollEnd, 100);
   _state = { isScrolling: false, scrollLastTick: 0 };
@@ -82,54 +76,45 @@ export default class ScrollViewBase extends Component<*> {
 
   render() {
     const {
-      scrollEnabled,
-      style,
-      /* eslint-disable */
-      alwaysBounceHorizontal,
-      alwaysBounceVertical,
-      automaticallyAdjustContentInsets,
-      bounces,
-      bouncesZoom,
-      canCancelContentTouches,
-      centerContent,
-      contentInset,
-      contentInsetAdjustmentBehavior,
-      contentOffset,
-      decelerationRate,
-      directionalLockEnabled,
-      endFillColor,
-      indicatorStyle,
-      keyboardShouldPersistTaps,
-      maximumZoomScale,
-      minimumZoomScale,
-      onMomentumScrollBegin,
-      onMomentumScrollEnd,
-      onScrollBeginDrag,
-      onScrollEndDrag,
-      overScrollMode,
-      pinchGestureEnabled,
-      removeClippedSubviews,
-      scrollEventThrottle,
-      scrollIndicatorInsets,
-      scrollPerfTag,
-      scrollsToTop,
+      accessibilityLabel,
+      accessibilityRelationship,
+      accessibilityRole,
+      accessibilityState,
+      children,
+      importantForAccessibility,
+      nativeID,
+      onLayout,
+      pointerEvents,
+      scrollEnabled = true,
       showsHorizontalScrollIndicator,
       showsVerticalScrollIndicator,
-      snapToInterval,
-      snapToAlignment,
-      zoomScale,
-      /* eslint-enable */
-      ...other
+      style,
+      testID
     } = this.props;
 
+    const hideScrollbar =
+      showsHorizontalScrollIndicator === false || showsVerticalScrollIndicator === false;
     return (
       <View
-        {...other}
+        accessibilityLabel={accessibilityLabel}
+        accessibilityRelationship={accessibilityRelationship}
+        accessibilityRole={accessibilityRole}
+        accessibilityState={accessibilityState}
+        children={children}
+        importantForAccessibility={importantForAccessibility}
+        nativeID={nativeID}
+        onLayout={onLayout}
         onScroll={this._handleScroll}
         onTouchMove={this._createPreventableScrollHandler(this.props.onTouchMove)}
         onWheel={this._createPreventableScrollHandler(this.props.onWheel)}
+        pointerEvents={pointerEvents}
         ref={this._setViewRef}
-        style={StyleSheet.compose(style, !scrollEnabled && styles.scrollDisabled)}
+        style={[
+          style,
+          !scrollEnabled && styles.scrollDisabled,
+          hideScrollbar && styles.hideScrollbar
+        ]}
+        testID={testID}
       />
     );
   }
@@ -140,9 +125,6 @@ export default class ScrollViewBase extends Component<*> {
         if (handler) {
           handler(e);
         }
-      } else {
-        // To disable scrolling in all browsers except Chrome
-        e.preventDefault();
       }
     };
   };
@@ -150,7 +132,7 @@ export default class ScrollViewBase extends Component<*> {
   _handleScroll = (e: Object) => {
     e.persist();
     e.stopPropagation();
-    const { scrollEventThrottle } = this.props;
+    const { scrollEventThrottle = 0 } = this.props;
     // A scroll happened, so the scroll bumps the debounce.
     this._debouncedOnScrollEnd(e);
     if (this._state.isScrolling) {
@@ -200,6 +182,11 @@ export default class ScrollViewBase extends Component<*> {
 // https://developers.google.com/web/updates/2017/01/scrolling-intervention
 const styles = StyleSheet.create({
   scrollDisabled: {
+    overflowX: 'hidden',
+    overflowY: 'hidden',
     touchAction: 'none'
+  },
+  hideScrollbar: {
+    scrollbarWidth: 'none'
   }
 });

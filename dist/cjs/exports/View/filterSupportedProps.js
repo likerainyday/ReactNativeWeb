@@ -1,12 +1,22 @@
-'use strict';
+"use strict";
 
 exports.__esModule = true;
-var whitelist = {
-  accessibilityComponentType: true,
+exports.default = void 0;
+
+/**
+ * Copyright (c) Nicolas Gallagher.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * 
+ */
+var supportedProps = {
   accessibilityLabel: true,
   accessibilityLiveRegion: true,
+  accessibilityRelationship: true,
   accessibilityRole: true,
-  accessibilityTraits: true,
+  accessibilityState: true,
   accessible: true,
   children: true,
   disabled: true,
@@ -42,6 +52,7 @@ var whitelist = {
   pointerEvents: true,
   style: true,
   testID: true,
+
   /* @platform web */
   onScroll: true,
   onWheel: true,
@@ -58,8 +69,12 @@ var whitelist = {
   onMouseOut: true,
   onMouseUp: true,
   // unstable escape-hatches for web
-  className: true,
   href: true,
+  itemID: true,
+  itemRef: true,
+  itemProp: true,
+  itemScope: true,
+  itemType: true,
   onClick: true,
   onClickCapture: true,
   rel: true,
@@ -68,15 +83,18 @@ var whitelist = {
 
 var filterSupportedProps = function filterSupportedProps(props) {
   var safeProps = {};
+
   for (var prop in props) {
     if (props.hasOwnProperty(prop)) {
-      if (whitelist[prop] || prop.indexOf('aria-') === 0 || prop.indexOf('data-') === 0) {
+      if (supportedProps[prop] || prop.indexOf('aria-') === 0 || prop.indexOf('data-') === 0) {
         safeProps[prop] = props[prop];
       }
     }
   }
+
   return safeProps;
 };
 
-exports.default = filterSupportedProps;
-module.exports = exports['default'];
+var _default = filterSupportedProps;
+exports.default = _default;
+module.exports = exports.default;

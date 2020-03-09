@@ -1,41 +1,30 @@
-function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; subClass.__proto__ = superClass; }
 
 /**
- * Copyright (c) 2015-present, Nicolas Gallagher.
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Nicolas Gallagher.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
  * 
  */
-
 import applyLayout from '../../modules/applyLayout';
 import applyNativeMethods from '../../modules/applyNativeMethods';
 import { canUseDOM } from 'fbjs/lib/ExecutionEnvironment';
-import { Component } from 'react';
-import ColorPropType from '../ColorPropType';
 import createElement from '../createElement';
+import css from '../StyleSheet/css';
+import filterSupportedProps from '../View/filterSupportedProps';
 import findNodeHandle from '../findNodeHandle';
+import React from 'react';
 import StyleSheet from '../StyleSheet';
-import StyleSheetPropType from '../../modules/StyleSheetPropType';
-import TextInputStylePropTypes from './TextInputStylePropTypes';
 import TextInputState from '../../modules/TextInputState';
-import ViewPropTypes from '../ViewPropTypes';
-import { any, bool, func, number, oneOf, shape, string } from 'prop-types';
-
 var isAndroid = canUseDOM && /Android/i.test(navigator && navigator.userAgent);
 var emptyObject = {};
-
 /**
  * React Native events differ from W3C events.
  */
+
 var normalizeEventHandler = function normalizeEventHandler(handler) {
   return function (e) {
     if (handler) {
@@ -44,33 +33,34 @@ var normalizeEventHandler = function normalizeEventHandler(handler) {
     }
   };
 };
-
 /**
  * Determines whether a 'selection' prop differs from a node's existing
  * selection state.
  */
+
+
 var isSelectionStale = function isSelectionStale(node, selection) {
-  if (node && selection) {
+  if (node != null && selection != null) {
     var selectionEnd = node.selectionEnd,
         selectionStart = node.selectionStart;
     var start = selection.start,
         end = selection.end;
-
     return start !== selectionStart || end !== selectionEnd;
   }
+
   return false;
 };
-
 /**
  * Certain input types do no support 'selectSelectionRange' and will throw an
  * error.
  */
+
+
 var setSelection = function setSelection(node, selection) {
   try {
-    if (isSelectionStale(node, selection)) {
+    if (node != null && selection != null && isSelectionStale(node, selection)) {
       var start = selection.start,
-          end = selection.end;
-      // workaround for Blink on Android: see https://github.com/text-mask/text-mask/issues/300
+          end = selection.end; // workaround for Blink on Android: see https://github.com/text-mask/text-mask/issues/300
 
       if (isAndroid) {
         setTimeout(function () {
@@ -83,114 +73,114 @@ var setSelection = function setSelection(node, selection) {
   } catch (e) {}
 };
 
-var TextInput = function (_Component) {
-  _inherits(TextInput, _Component);
+var TextInput =
+/*#__PURE__*/
+function (_React$Component) {
+  _inheritsLoose(TextInput, _React$Component);
 
   function TextInput() {
-    var _temp, _this, _ret;
+    var _this;
 
-    _classCallCheck(this, TextInput);
-
-    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
       args[_key] = arguments[_key];
     }
 
-    return _ret = (_temp = (_this = _possibleConstructorReturn(this, _Component.call.apply(_Component, [this].concat(args))), _this), _this._handleBlur = function (e) {
-      var onBlur = _this.props.onBlur;
+    _this = _React$Component.call.apply(_React$Component, [this].concat(args)) || this;
 
+    _this._handleBlur = function (e) {
+      var onBlur = _this.props.onBlur;
       TextInputState._currentlyFocusedNode = null;
+
       if (onBlur) {
         onBlur(e);
       }
-    }, _this._handleChange = function (e) {
+    };
+
+    _this._handleContentSizeChange = function () {
       var _this$props = _this.props,
-          onChange = _this$props.onChange,
-          onChangeText = _this$props.onChangeText;
+          onContentSizeChange = _this$props.onContentSizeChange,
+          multiline = _this$props.multiline;
+
+      if (multiline && onContentSizeChange) {
+        var newHeight = _this._node.scrollHeight;
+        var newWidth = _this._node.scrollWidth;
+
+        if (newHeight !== _this._nodeHeight || newWidth !== _this._nodeWidth) {
+          _this._nodeHeight = newHeight;
+          _this._nodeWidth = newWidth;
+          onContentSizeChange({
+            nativeEvent: {
+              contentSize: {
+                height: _this._nodeHeight,
+                width: _this._nodeWidth
+              }
+            }
+          });
+        }
+      }
+    };
+
+    _this._handleChange = function (e) {
+      var _this$props2 = _this.props,
+          onChange = _this$props2.onChange,
+          onChangeText = _this$props2.onChangeText;
       var text = e.nativeEvent.text;
+
+      _this._handleContentSizeChange();
 
       if (onChange) {
         onChange(e);
       }
+
       if (onChangeText) {
         onChangeText(text);
       }
-      _this._handleSelectionChange(e);
-    }, _this._handleFocus = function (e) {
-      var _this$props2 = _this.props,
-          clearTextOnFocus = _this$props2.clearTextOnFocus,
-          onFocus = _this$props2.onFocus,
-          selectTextOnFocus = _this$props2.selectTextOnFocus;
 
+      _this._handleSelectionChange(e);
+    };
+
+    _this._handleFocus = function (e) {
+      var _this$props3 = _this.props,
+          clearTextOnFocus = _this$props3.clearTextOnFocus,
+          onFocus = _this$props3.onFocus,
+          selectTextOnFocus = _this$props3.selectTextOnFocus;
       var node = _this._node;
       TextInputState._currentlyFocusedNode = _this._node;
+
       if (onFocus) {
         onFocus(e);
       }
+
       if (clearTextOnFocus) {
         _this.clear();
       }
+
       if (selectTextOnFocus) {
         node && node.select();
       }
-    }, _this._handleKeyDown = function (e) {
-      // Prevent key events bubbling (see #612)
-      e.stopPropagation();
+    };
 
-      // Backspace, Escape, Tab, Cmd+Enter, and Arrow keys only fire 'keydown'
+    _this._handleKeyDown = function (e) {
+      // Prevent key events bubbling (see #612)
+      e.stopPropagation(); // Backspace, Escape, Tab, Cmd+Enter, and Arrow keys only fire 'keydown'
       // DOM events
-      if (e.which === 8 || e.which === 9 || e.which === 13 && e.metaKey || e.which === 27 || e.which === 37 || e.which === 38 || e.which === 39 || e.which === 40) {
+
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'Backspace' || e.key === 'Escape' || e.key === 'Enter' && e.metaKey || e.key === 'Tab') {
         _this._handleKeyPress(e);
       }
-    }, _this._handleKeyPress = function (e) {
-      var _this$props3 = _this.props,
-          blurOnSubmit = _this$props3.blurOnSubmit,
-          multiline = _this$props3.multiline,
-          onKeyPress = _this$props3.onKeyPress,
-          onSubmitEditing = _this$props3.onSubmitEditing;
+    };
 
+    _this._handleKeyPress = function (e) {
+      var _this$props4 = _this.props,
+          blurOnSubmit = _this$props4.blurOnSubmit,
+          multiline = _this$props4.multiline,
+          onKeyPress = _this$props4.onKeyPress,
+          onSubmitEditing = _this$props4.onSubmitEditing;
       var blurOnSubmitDefault = !multiline;
       var shouldBlurOnSubmit = blurOnSubmit == null ? blurOnSubmitDefault : blurOnSubmit;
 
       if (onKeyPress) {
-        var keyValue = void 0;
-        switch (e.which) {
-          case 8:
-            keyValue = 'Backspace';
-            break;
-          case 9:
-            keyValue = 'Tab';
-            break;
-          case 13:
-            keyValue = 'Enter';
-            break;
-          case 27:
-            keyValue = 'Escape';
-            break;
-          case 32:
-            keyValue = ' ';
-            break;
-          case 37:
-            keyValue = 'ArrowLeft';
-            break;
-          case 38:
-            keyValue = 'ArrowUp';
-            break;
-          case 39:
-            keyValue = 'ArrowRight';
-            break;
-          case 40:
-            keyValue = 'ArrowDown';
-            break;
-          default:
-            {
-              // Trim to only care about the keys that have a textual representation
-              if (e.shiftKey) {
-                keyValue = String.fromCharCode(e.which).trim();
-              } else {
-                keyValue = String.fromCharCode(e.which).toLowerCase().trim();
-              }
-            }
-        }
+        var keyValue = e.key;
 
         if (keyValue) {
           e.nativeEvent = {
@@ -205,30 +195,37 @@ var TextInput = function (_Component) {
         }
       }
 
-      if (!e.isDefaultPrevented() && e.which === 13 && !e.shiftKey) {
+      if (!e.isDefaultPrevented() && e.key === 'Enter' && !e.shiftKey) {
         if ((blurOnSubmit || !multiline) && onSubmitEditing) {
           // prevent "Enter" from inserting a newline
           e.preventDefault();
-          e.nativeEvent = { target: e.target, text: e.target.value };
+          e.nativeEvent = {
+            target: e.target,
+            text: e.target.value
+          };
           onSubmitEditing(e);
         }
+
         if (shouldBlurOnSubmit) {
+          // $FlowFixMe
           _this.blur();
         }
       }
-    }, _this._handleSelectionChange = function (e) {
-      var _this$props4 = _this.props,
-          onSelectionChange = _this$props4.onSelectionChange,
-          _this$props4$selectio = _this$props4.selection,
-          selection = _this$props4$selectio === undefined ? emptyObject : _this$props4$selectio;
+    };
+
+    _this._handleSelectionChange = function (e) {
+      var _this$props5 = _this.props,
+          onSelectionChange = _this$props5.onSelectionChange,
+          _this$props5$selectio = _this$props5.selection,
+          selection = _this$props5$selectio === void 0 ? emptyObject : _this$props5$selectio;
 
       if (onSelectionChange) {
         try {
           var node = e.target;
+
           if (isSelectionStale(node, selection)) {
             var selectionStart = node.selectionStart,
                 selectionEnd = node.selectionEnd;
-
             e.nativeEvent.selection = {
               start: selectionStart,
               end: selectionEnd
@@ -237,99 +234,94 @@ var TextInput = function (_Component) {
           }
         } catch (e) {}
       }
-    }, _this._setNode = function (component) {
+    };
+
+    _this._setNode = function (component) {
       _this._node = findNodeHandle(component);
-    }, _temp), _possibleConstructorReturn(_this, _ret);
+
+      if (_this._node) {
+        _this._handleContentSizeChange();
+      }
+    };
+
+    return _this;
   }
 
-  TextInput.prototype.clear = function clear() {
+  var _proto = TextInput.prototype;
+
+  _proto.clear = function clear() {
     this._node.value = '';
   };
 
-  TextInput.prototype.isFocused = function isFocused() {
+  _proto.isFocused = function isFocused() {
     return TextInputState.currentlyFocusedField() === this._node;
   };
 
-  TextInput.prototype.componentDidMount = function componentDidMount() {
+  _proto.componentDidMount = function componentDidMount() {
     setSelection(this._node, this.props.selection);
+
     if (document.activeElement === this._node) {
       TextInputState._currentlyFocusedNode = this._node;
     }
   };
 
-  TextInput.prototype.componentDidUpdate = function componentDidUpdate() {
+  _proto.componentDidUpdate = function componentDidUpdate() {
     setSelection(this._node, this.props.selection);
   };
 
-  TextInput.prototype.render = function render() {
-    var _props = this.props,
-        autoCorrect = _props.autoCorrect,
-        editable = _props.editable,
-        keyboardType = _props.keyboardType,
-        multiline = _props.multiline,
-        numberOfLines = _props.numberOfLines,
-        secureTextEntry = _props.secureTextEntry,
-        style = _props.style,
-        blurOnSubmit = _props.blurOnSubmit,
-        clearTextOnFocus = _props.clearTextOnFocus,
-        onChangeText = _props.onChangeText,
-        onLayout = _props.onLayout,
-        onSelectionChange = _props.onSelectionChange,
-        onSubmitEditing = _props.onSubmitEditing,
-        selection = _props.selection,
-        selectTextOnFocus = _props.selectTextOnFocus,
-        spellCheck = _props.spellCheck,
-        accessibilityViewIsModal = _props.accessibilityViewIsModal,
-        allowFontScaling = _props.allowFontScaling,
-        caretHidden = _props.caretHidden,
-        clearButtonMode = _props.clearButtonMode,
-        dataDetectorTypes = _props.dataDetectorTypes,
-        disableFullscreenUI = _props.disableFullscreenUI,
-        enablesReturnKeyAutomatically = _props.enablesReturnKeyAutomatically,
-        hitSlop = _props.hitSlop,
-        inlineImageLeft = _props.inlineImageLeft,
-        inlineImagePadding = _props.inlineImagePadding,
-        inputAccessoryViewID = _props.inputAccessoryViewID,
-        keyboardAppearance = _props.keyboardAppearance,
-        needsOffscreenAlphaCompositing = _props.needsOffscreenAlphaCompositing,
-        onAccessibilityTap = _props.onAccessibilityTap,
-        onContentSizeChange = _props.onContentSizeChange,
-        onEndEditing = _props.onEndEditing,
-        onMagicTap = _props.onMagicTap,
-        onScroll = _props.onScroll,
-        removeClippedSubviews = _props.removeClippedSubviews,
-        renderToHardwareTextureAndroid = _props.renderToHardwareTextureAndroid,
-        returnKeyLabel = _props.returnKeyLabel,
-        returnKeyType = _props.returnKeyType,
-        scrollEnabled = _props.scrollEnabled,
-        selectionColor = _props.selectionColor,
-        selectionState = _props.selectionState,
-        shouldRasterizeIOS = _props.shouldRasterizeIOS,
-        textBreakStrategy = _props.textBreakStrategy,
-        textContentType = _props.textContentType,
-        underlineColorAndroid = _props.underlineColorAndroid,
-        otherProps = _objectWithoutProperties(_props, ['autoCorrect', 'editable', 'keyboardType', 'multiline', 'numberOfLines', 'secureTextEntry', 'style', 'blurOnSubmit', 'clearTextOnFocus', 'onChangeText', 'onLayout', 'onSelectionChange', 'onSubmitEditing', 'selection', 'selectTextOnFocus', 'spellCheck', 'accessibilityViewIsModal', 'allowFontScaling', 'caretHidden', 'clearButtonMode', 'dataDetectorTypes', 'disableFullscreenUI', 'enablesReturnKeyAutomatically', 'hitSlop', 'inlineImageLeft', 'inlineImagePadding', 'inputAccessoryViewID', 'keyboardAppearance', 'needsOffscreenAlphaCompositing', 'onAccessibilityTap', 'onContentSizeChange', 'onEndEditing', 'onMagicTap', 'onScroll', 'removeClippedSubviews', 'renderToHardwareTextureAndroid', 'returnKeyLabel', 'returnKeyType', 'scrollEnabled', 'selectionColor', 'selectionState', 'shouldRasterizeIOS', 'textBreakStrategy', 'textContentType', 'underlineColorAndroid']);
-
-    var type = void 0;
+  _proto.render = function render() {
+    var _this$props6 = this.props,
+        _this$props6$autoCapi = _this$props6.autoCapitalize,
+        autoCapitalize = _this$props6$autoCapi === void 0 ? 'sentences' : _this$props6$autoCapi,
+        autoComplete = _this$props6.autoComplete,
+        autoCompleteType = _this$props6.autoCompleteType,
+        _this$props6$autoCorr = _this$props6.autoCorrect,
+        autoCorrect = _this$props6$autoCorr === void 0 ? true : _this$props6$autoCorr,
+        autoFocus = _this$props6.autoFocus,
+        defaultValue = _this$props6.defaultValue,
+        disabled = _this$props6.disabled,
+        _this$props6$editable = _this$props6.editable,
+        editable = _this$props6$editable === void 0 ? true : _this$props6$editable,
+        _this$props6$keyboard = _this$props6.keyboardType,
+        keyboardType = _this$props6$keyboard === void 0 ? 'default' : _this$props6$keyboard,
+        maxLength = _this$props6.maxLength,
+        _this$props6$multilin = _this$props6.multiline,
+        multiline = _this$props6$multilin === void 0 ? false : _this$props6$multilin,
+        _this$props6$numberOf = _this$props6.numberOfLines,
+        numberOfLines = _this$props6$numberOf === void 0 ? 1 : _this$props6$numberOf,
+        placeholder = _this$props6.placeholder,
+        placeholderTextColor = _this$props6.placeholderTextColor,
+        returnKeyType = _this$props6.returnKeyType,
+        _this$props6$secureTe = _this$props6.secureTextEntry,
+        secureTextEntry = _this$props6$secureTe === void 0 ? false : _this$props6$secureTe,
+        spellCheck = _this$props6.spellCheck,
+        style = _this$props6.style,
+        value = _this$props6.value;
+    var type;
 
     switch (keyboardType) {
       case 'email-address':
         type = 'email';
         break;
+
       case 'number-pad':
       case 'numeric':
         type = 'number';
         break;
+
       case 'phone-pad':
         type = 'tel';
         break;
+
       case 'search':
       case 'web-search':
         type = 'search';
         break;
+
       case 'url':
         type = 'url';
         break;
+
       default:
         type = 'text';
     }
@@ -339,117 +331,61 @@ var TextInput = function (_Component) {
     }
 
     var component = multiline ? 'textarea' : 'input';
-
-    Object.assign(otherProps, {
+    var supportedProps = filterSupportedProps(this.props);
+    Object.assign(supportedProps, {
+      autoCapitalize: autoCapitalize,
+      autoComplete: autoComplete || autoCompleteType || 'on',
       autoCorrect: autoCorrect ? 'on' : 'off',
+      autoFocus: autoFocus,
+      classList: [classes.textinput],
+      defaultValue: defaultValue,
       dir: 'auto',
+      disabled: disabled,
+      enterkeyhint: returnKeyType,
+      maxLength: maxLength,
       onBlur: normalizeEventHandler(this._handleBlur),
       onChange: normalizeEventHandler(this._handleChange),
       onFocus: normalizeEventHandler(this._handleFocus),
       onKeyDown: this._handleKeyDown,
       onKeyPress: this._handleKeyPress,
       onSelect: normalizeEventHandler(this._handleSelectionChange),
+      placeholder: placeholder,
       readOnly: !editable,
       ref: this._setNode,
       spellCheck: spellCheck != null ? spellCheck : autoCorrect,
-      style: [styles.initial, style]
+      style: StyleSheet.compose(style, placeholderTextColor && {
+        placeholderTextColor: placeholderTextColor
+      }),
+      value: value
     });
 
     if (multiline) {
-      otherProps.rows = numberOfLines;
+      supportedProps.rows = numberOfLines;
     } else {
-      otherProps.type = type;
+      supportedProps.type = type;
     }
 
-    return createElement(component, otherProps);
+    return createElement(component, supportedProps);
   };
 
   return TextInput;
-}(Component);
+}(React.Component);
 
 TextInput.displayName = 'TextInput';
-TextInput.defaultProps = {
-  autoCapitalize: 'sentences',
-  autoComplete: 'on',
-  autoCorrect: true,
-  editable: true,
-  keyboardType: 'default',
-  multiline: false,
-  numberOfLines: 1,
-  secureTextEntry: false,
-  style: emptyObject
-};
 TextInput.State = TextInputState;
-TextInput.propTypes = process.env.NODE_ENV !== "production" ? Object.assign({}, ViewPropTypes, {
-  autoCapitalize: oneOf(['characters', 'none', 'sentences', 'words']),
-  autoComplete: string,
-  autoCorrect: bool,
-  autoFocus: bool,
-  blurOnSubmit: bool,
-  clearTextOnFocus: bool,
-  defaultValue: string,
-  editable: bool,
-  inputAccessoryViewID: string,
-  keyboardType: oneOf(['default', 'email-address', 'number-pad', 'numbers-and-punctuation', 'numeric', 'phone-pad', 'search', 'url', 'web-search']),
-  maxLength: number,
-  multiline: bool,
-  numberOfLines: number,
-  onBlur: func,
-  onChange: func,
-  onChangeText: func,
-  onFocus: func,
-  onKeyPress: func,
-  onSelectionChange: func,
-  onSubmitEditing: func,
-  placeholder: string,
-  placeholderTextColor: ColorPropType,
-  secureTextEntry: bool,
-  selectTextOnFocus: bool,
-  selection: shape({
-    start: number.isRequired,
-    end: number
-  }),
-  spellCheck: bool,
-  style: StyleSheetPropType(TextInputStylePropTypes),
-  value: string,
-  /* react-native compat */
-  /* eslint-disable */
-  caretHidden: bool,
-  clearButtonMode: string,
-  dataDetectorTypes: string,
-  disableFullscreenUI: bool,
-  enablesReturnKeyAutomatically: bool,
-  keyboardAppearance: string,
-  inlineImageLeft: string,
-  inlineImagePadding: number,
-  onContentSizeChange: func,
-  onEndEditing: func,
-  onScroll: func,
-  returnKeyLabel: string,
-  returnKeyType: string,
-  selectionColor: ColorPropType,
-  selectionState: any,
-  textBreakStrategy: string,
-  underlineColorAndroid: ColorPropType
-  /* eslint-enable */
-}) : {};
-
-
-var styles = StyleSheet.create({
-  initial: {
+var classes = css.create({
+  textinput: {
     MozAppearance: 'textfield',
     WebkitAppearance: 'none',
     backgroundColor: 'transparent',
-    borderColor: 'black',
+    border: '0 solid black',
     borderRadius: 0,
-    borderStyle: 'solid',
-    borderWidth: 0,
     boxSizing: 'border-box',
-    fontFamily: 'System',
-    fontSize: 14,
+    font: '14px System',
+    margin: 0,
     padding: 0,
-    resize: 'none'
+    resize: 'none',
+    // outline:'none'
   }
 });
-
 export default applyLayout(applyNativeMethods(TextInput));
