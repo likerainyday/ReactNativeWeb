@@ -212,12 +212,6 @@ function createAtomicRules(identifier, property, value) {
       }
   }
 
-  //scrollIndicator = 'none'
-  rules.push(
-    `${selector}::-webkit-scrollbar{width: 0 !important}`,
-    `${selector}{overflow: -moz-scrollbars-none;-ms-overflow-style: none;scrollbar-width: none;}`
-  );
-
   return rules;
 }
 /**
